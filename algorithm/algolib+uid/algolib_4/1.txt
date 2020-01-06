@@ -1,0 +1,133 @@
+
+[program:celery_general]
+command=/usr/local/flask_houtai/flaskhoutai/env/bin/celery -A tasks.general_tasks worker -P gevent -c 100 -n worker_general.%h -Q general_tasks
+;process_name=%(program_name)s ; process_name expr (default %(program_name)s)
+;numprocs=1                    ; number of processes copies to start (def 1)
+directory=/usr/local/flask_houtai/flaskhoutai                ; directory to cwd to before exec (def no cwd)
+;umask=022                     ; umask for process (default None)
+priority=500                  ; the relative start priority (default 999)
+autostart=true                ; start at supervisord start (default: true)
+startsecs=8                   ; # of secs prog must stay up to be running (def. 1)
+startretries=4                ; max # of serial start failures when starting (default 3)
+autorestart=true        ; when to restart if exited after running (def: unexpected)
+;exitcodes=0                   ; 'expected' exit codes used with autorestart (default 0)
+stopsignal=QUIT               ; signal used to kill process (default TERM)
+;stopwaitsecs=10               ; max num secs to wait b4 SIGKILL (default 10)
+stopasgroup=true             ; send stop signal to the UNIX process group (default false)
+;killasgroup=false             ; SIGKILL the UNIX process group (def false)
+;user=chrism                   ; setuid to this UNIX account to run the program
+redirect_stderr=false          ; redirect proc stderr to stdout (default false)
+stdout_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_general_out.log        ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=10     ; # of stdout logfile backups (0 means none, default 10)
+;stdout_capture_maxbytes=1MB   ; number of bytes in 'capturemode' (default 0)
+;stdout_events_enabled=false   ; emit events on stdout writes (default false)
+stdout_syslog=true           ; send stdout to syslog with process name (default false)
+stderr_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_general_err.log        ; stderr log path, NONE for none; default AUTO
+stderr_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stderr_logfile_backups=10     ; # of stderr logfile backups (0 means none, default 10)
+;stderr_capture_maxbytes=100MB   ; number of bytes in 'capturemode' (default 0)
+;stderr_events_enabled=false   ; emit events on stderr writes (default false)
+stderr_syslog=true           ; send stderr to syslog with process name (default false)
+;environment=A="1",B="2"       ; process environment additions (def no adds)
+;serverurl=AUTO                ; override serverurl computation (childutils)
+
+
+[program:celery_schedule]
+command=/usr/local/flask_houtai/flaskhoutai/env/bin/celery -A tasks.schedule_tasks worker -P gevent -n worker_schedule.%h -Q schedule_tasks
+;process_name=%(program_name)s ; process_name expr (default %(program_name)s)
+;numprocs=1                    ; number of processes copies to start (def 1)
+directory=/usr/local/flask_houtai/flaskhoutai                ; directory to cwd to before exec (def no cwd)
+;umask=022                     ; umask for process (default None)
+priority=501                  ; the relative start priority (default 999)
+autostart=true                ; start at supervisord start (default: true)
+startsecs=8                   ; # of secs prog must stay up to be running (def. 1)
+startretries=4                ; max # of serial start failures when starting (default 3)
+autorestart=true        ; when to restart if exited after running (def: unexpected)
+;exitcodes=0                   ; 'expected' exit codes used with autorestart (default 0)
+stopsignal=QUIT               ; signal used to kill process (default TERM)
+;stopwaitsecs=10               ; max num secs to wait b4 SIGKILL (default 10)
+stopasgroup=true             ; send stop signal to the UNIX process group (default false)
+;killasgroup=false             ; SIGKILL the UNIX process group (def false)
+;user=chrism                   ; setuid to this UNIX account to run the program
+redirect_stderr=false          ; redirect proc stderr to stdout (default false)
+stdout_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_schedule_out.log        ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=10     ; # of stdout logfile backups (0 means none, default 10)
+;stdout_capture_maxbytes=1MB   ; number of bytes in 'capturemode' (default 0)
+;stdout_events_enabled=false   ; emit events on stdout writes (default false)
+stdout_syslog=true           ; send stdout to syslog with process name (default false)
+stderr_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_schedule_err.log        ; stderr log path, NONE for none; default AUTO
+stderr_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stderr_logfile_backups=10     ; # of stderr logfile backups (0 means none, default 10)
+;stderr_capture_maxbytes=100MB   ; number of bytes in 'capturemode' (default 0)
+;stderr_events_enabled=false   ; emit events on stderr writes (default false)
+stderr_syslog=true           ; send stderr to syslog with process name (default false)
+;environment=A="1",B="2"       ; process environment additions (def no adds)
+;serverurl=AUTO                ; override serverurl computation (childutils)
+
+[program:celery_ur_tasks]
+command=/usr/local/flask_houtai/flaskhoutai/env/bin/celery -A tasks.general_tasks worker -c 1 -n worker_ur_tasks.%h -Q ur_tasks
+;process_name=%(program_name)s ; process_name expr (default %(program_name)s)
+;numprocs=1                    ; number of processes copies to start (def 1)
+directory=/usr/local/flask_houtai/flaskhoutai                ; directory to cwd to before exec (def no cwd)
+;umask=022                     ; umask for process (default None)
+priority=502                  ; the relative start priority (default 999)
+autostart=true                ; start at supervisord start (default: true)
+startsecs=8                   ; # of secs prog must stay up to be running (def. 1)
+startretries=4                ; max # of serial start failures when starting (default 3)
+autorestart=true        ; when to restart if exited after running (def: unexpected)
+;exitcodes=0                   ; 'expected' exit codes used with autorestart (default 0)
+stopsignal=QUIT               ; signal used to kill process (default TERM)
+;stopwaitsecs=10               ; max num secs to wait b4 SIGKILL (default 10)
+stopasgroup=true             ; send stop signal to the UNIX process group (default false)
+;killasgroup=false             ; SIGKILL the UNIX process group (def false)
+;user=chrism                   ; setuid to this UNIX account to run the program
+redirect_stderr=false          ; redirect proc stderr to stdout (default false)
+stdout_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_ur_tasks_out.log        ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=10     ; # of stdout logfile backups (0 means none, default 10)
+;stdout_capture_maxbytes=1MB   ; number of bytes in 'capturemode' (default 0)
+;stdout_events_enabled=false   ; emit events on stdout writes (default false)
+stdout_syslog=true           ; send stdout to syslog with process name (default false)
+stderr_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_ur_tasks_err.log        ; stderr log path, NONE for none; default AUTO
+stderr_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stderr_logfile_backups=10     ; # of stderr logfile backups (0 means none, default 10)
+;stderr_capture_maxbytes=100MB   ; number of bytes in 'capturemode' (default 0)
+;stderr_events_enabled=false   ; emit events on stderr writes (default false)
+stderr_syslog=true           ; send stderr to syslog with process name (default false)
+;environment=A="1",B="2"       ; process environment additions (def no adds)
+;serverurl=AUTO                ; override serverurl computation (childutils)
+
+[program:celery_beat]
+command=/usr/local/flask_houtai/flaskhoutai/env/bin/celery -A tasks.schedule_tasks beat
+;process_name=%(program_name)s ; process_name expr (default %(program_name)s)
+;numprocs=1                    ; number of processes copies to start (def 1)
+directory=/usr/local/flask_houtai/flaskhoutai                ; directory to cwd to before exec (def no cwd)
+;umask=022                     ; umask for process (default None)
+priority=999                  ; the relative start priority (default 999)
+autostart=true                ; start at supervisord start (default: true)
+startsecs=8                   ; # of secs prog must stay up to be running (def. 1)
+startretries=4                ; max # of serial start failures when starting (default 3)
+autorestart=true        ; when to restart if exited after running (def: unexpected)
+;exitcodes=0                   ; 'expected' exit codes used with autorestart (default 0)
+stopsignal=QUIT               ; signal used to kill process (default TERM)
+;stopwaitsecs=10               ; max num secs to wait b4 SIGKILL (default 10)
+stopasgroup=true             ; send stop signal to the UNIX process group (default false)
+;killasgroup=false             ; SIGKILL the UNIX process group (def false)
+;user=chrism                   ; setuid to this UNIX account to run the program
+redirect_stderr=false          ; redirect proc stderr to stdout (default false)
+stdout_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_beat_out.log        ; stdout log path, NONE for none; default AUTO
+stdout_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stdout_logfile_backups=10     ; # of stdout logfile backups (0 means none, default 10)
+;stdout_capture_maxbytes=1MB   ; number of bytes in 'capturemode' (default 0)
+;stdout_events_enabled=false   ; emit events on stdout writes (default false)
+stdout_syslog=true           ; send stdout to syslog with process name (default false)
+stderr_logfile=/usr/local/flask_houtai/flaskhoutai/logs/celery_beat_err.log        ; stderr log path, NONE for none; default AUTO
+stderr_logfile_maxbytes=20MB   ; max # logfile bytes b4 rotation (default 50MB)
+stderr_logfile_backups=10     ; # of stderr logfile backups (0 means none, default 10)
+;stderr_capture_maxbytes=100MB   ; number of bytes in 'capturemode' (default 0)
+;stderr_events_enabled=false   ; emit events on stderr writes (default false)
+stderr_syslog=true           ; send stderr to syslog with process name (default false)
+;environment=A="1",B="2"       ; process environment additions (def no adds)
+;serverurl=AUTO                ; override serverurl computation (childutils)

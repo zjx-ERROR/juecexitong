@@ -1,0 +1,193 @@
+
+登陆相关接口
+# http://120.31.140.112:8080/componentManagement/login  登录
+		/backstage/login/
+
+# http://120.31.140.112:8080/componentManagement//user/queryUserByUserName  用户信息查询
+		/backstage/queryUserByUserName/
+
+
+可视化应用功能 之前替换的接口
+# http://120.31.140.112:8080/componentManagement//chart/list 查找所有业务组件数据
+           /visualization_application/componentlist/   
+
+# http://120.31.140.112:8080/componentManagement//comm/GeneratingChart/delSelect  删除组件数据
+		/visualization_application/delcomponent/  
+
+# http://120.31.140.112:8080/componentManagement//chart/get 查找某个业务组件数据
+		/visualization_application/componentmsg/   
+
+20190807 替换的接口
+# http://120.31.140.112:8080/componentManagement//component/getAllCategory  获取组件类型含全部
+		/visualization_application/getAllCategory/
+
+# http://120.31.140.112:8080/componentManagement//comm/QuotaOverviewEntity/delSelect 删除指标组件
+		/visualization_application/delquotas/
+
+# http://120.31.140.112:8080/componentManagement//quota/listEntity  查找所有指标组件数据
+		/visualization_application/quotaslist/
+
+# http://120.31.140.112:8080/componentManagement//quota/saveQuotaOverviewEntity 增加保存指标类型数据
+		/visualization_application/saveQuotaOverviewEntity/
+
+
+20190808 替换的接口
+# http://120.31.140.112:8080/componentManagement//reportDB/listAll   获取系统数据报表
+		/data_report/reportlistAll/
+
+# http://120.31.140.112:8080/componentManagement//reportDB/delSelect 删除系统数据报表
+		/data_report/delreportDB/
+
+# http://120.31.140.112:8080/componentManagement/reportDB/save  增加系统数据报表
+		/data_report/addreportDB/
+
+# http://120.31.140.112:8080/componentManagement/dataOverviewTemplate/getByUidAndReportDBId  通过报表id获取模板图列表(业务组件)
+		/data_report/dataOverviewTemplate/
+
+# http://120.31.140.112:8080/componentManagement//quota/queryByOverviewId  通过报表id获取模板图列表(指标组件)
+		/data_report/quotaOverviewTemplate/
+
+# http://120.31.140.112:8080/componentManagement//quota/saveAllTemplateInReport  保存系统报表首要指标组件
+		/data_report/savequotaTemplateInReport/
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------15
+20190809 替换的接口
+# http://120.31.140.112:8080/componentManagement//dataOverviewTemplate/saveAllTemplateInReport  保存系统报表图表业务组件内容
+		/data_report/savecomponentTemplateInReport/
+
+# http://120.31.140.112:8080/componentManagement//reportDB/updateThumbnail   保存编辑报表截图
+		/data_report/updateReportThumbnail/
+
+# http://120.31.140.112:8080/componentManagement//comm/imgFlowDownload 下载报表截图图片
+		/data_report/getreportstyles/
+
+# http://120.31.140.112:8080/componentManagement//reportDB/updateStyle  修改保存报表风格
+		/data_report/updateReportStyle/
+
+
+20190812 替换接口
+# http://120.31.140.112:8080/componentManagement/pushReport/getAllReportByUidAndType  获取用户报表信息
+		/data_report/getAllReportByUidAndType/
+
+
+20190813 替换接口
+# http://120.31.140.112:8080/componentManagement//reportDB/get  # 信箱进模板的数据库版
+		/data_report/getMailboxreport/
+
+# http://120.31.140.112:8080/componentManagement//pushReport/getPrivilege  获取报表配置信息
+		/data_report/getPrivilege/
+
+# http://120.31.140.112:8080/componentManagement/pushReport/burnAfterReading 信箱阅后即焚配置
+		/data_report/burnAfterReading/
+
+# http://120.31.140.112:8080/componentManagement//analysisReport/listAllByUid 获取分析报告列表
+		/data_report/analysisReportlistAll/
+
+# http://120.31.140.112:8080/componentManagement//analysisReport/del 删除分析报告
+		/data_report/delanalysisReport/
+
+
+20190815 工作进展
+# http://120.31.140.112:8080/componentManagement/%20/comm/layout/queryAll 获取数据大屏列表
+		/databigscreen/queryAll/
+
+# http://120.31.140.112:8080/componentManagement/comm/Layout/delSelect 删除数据大屏列表
+		/databigscreen/delSelect/
+
+# http://120.31.140.112:8080/componentManagement//component/getAllChartCategoryComponent 获取组件类型及组件
+		/databigscreen/getAllChartCategoryComponent/
+
+
+20190816  工作进展
+# http://120.31.140.112:8080/componentManagement//analysisReport/getAllReportPartById   获取分析报告内容
+		/data_report/getanalysisReportContent/	
+	
+# http://120.31.140.112:8080/componentManagement//analysisReport/save 保存分析报告内容
+		/data_report/saveAnalysisReport/
+
+# http://120.31.140.112:8080/componentManagement//user/getDepartments  获取推送部门
+		/personalcenter/getpushDepartments/
+
+# http://120.31.140.112:8080/componentManagement//user/getUserByDepartmentID  获取部门下相关推送人
+		/personalcenter/getUserByDepartmentID/
+
+# http://120.31.140.112:8080/componentManagement/pushReport/save/  保存推送内容
+		/personalcenter/reportPushSave/
+
+----------------------------------------------------------------------------------------------------------------------------33
+
+20190819 工作进展
+# http://120.31.140.112:8080/componentManagement//pushReport/querySenderReports  # 推送数据模糊查询
+		/personalcenter/querylikeSenderReports/
+
+# http://120.31.140.112:8080/componentManagement//comm/view_push_type/listAll  获取推送类型
+		/personalcenter/getpushMailtype/
+
+# http://120.31.140.112:8080/componentManagement//pushReport/delSelectRecipientReports  删除信箱报告
+		/personalcenter/delSelectRecipientReports/
+
+
+20190820 工作进展
+# http://120.31.140.112:8080/componentManagement//pushReport/queryRecipientReports  信箱模糊查询
+		/personalcenter/querylikeRecipientReports/
+
+# http://120.31.140.112:8080/componentManagement//pushReport/readPushReport 点击信箱变已读
+		/personalcenter/readPushReport/
+
+
+20190821 工作进展
+
+# http://120.31.140.112:8080/componentManagement//collection/query 查询收藏列表
+		/personalcenter/querycollection/
+
+# http://120.31.140.112:8080/componentManagement//collection/save   点击收藏
+		/personalcenter/clickCollect/
+
+# http://120.31.140.112:8080/componentManagement//collection/delSelectByPushId  取消收藏
+		/personalcenter/delCollection/
+
+# http://120.31.140.112:8080/componentManagement//comm/imgDownload  下载图片 thumbnail: 图片全路径
+		/personalcenter/imgDownload/
+
+
+20190822 工作进展
+# http://120.31.140.112:8080/componentManagement//hardware/list 大屏资源一张图数据列表
+		/personalcenter/hardwarelist/
+
+# http://120.31.140.112:8080/componentManagement//hardware/query  大屏资源模糊查询
+		/personalcenter/hardwarelike/
+
+# http://120.31.140.112:8080/componentManagement//hardware/getUnitByName  大屏信息
+		/personalcenter/getUnitByName/
+
+# http://120.31.140.112:8080/componentManagement//scheduling/listAppointment  预约管理列表
+		/personalcenter/listAppointment/
+
+# http://120.31.140.112:8080/componentManagement//scheduling/delSelectAppointment 取消预约
+		/personalcenter/delSelectAppointment/
+
+
+20190823 工作进展
+# http://120.31.140.112:8080/componentManagement//scheduling/add   添加预约排期
+		/personalcenter/addscheduling/
+
+# http://120.31.140.112:8080/componentManagement//scheduling/getAppointmentByPeriodPId  预约时间段具体信息
+		/personalcenter/getAppointmentByPeriodPId/
+
+# http://120.31.140.112:8080/componentManagement//scheduling/getSchedulingMsgById 各预约时间段信息
+		/personalcenter/getSchedulingMsgById/
+
+# http://120.31.140.112:8080/componentManagement//scheduling/getSchedulingByAppointment  查询大屏使用排期
+		/personalcenter/getSchedulingByAppointment/
+
+
+20190824 工作进展
+# http://120.31.140.112:8080/componentManagement//pushReport/getUnreadCount  信箱未读数量
+		/personalcenter/getUnreadCount/
+
+# http://120.31.140.112:8080/componentManagement//pushReport/readReportCount  清空信箱未读数
+		/personalcenter/clearUnreadCount/
+
+# http://120.31.140.112:8080/componentManagement/comm/view_layout_name/listAll  页面名称列表(旧驾驶舱)
+		/personalcenter/view_layout_name_listAll/
+--------------------------------------------------------------------------------------------------------------------------54

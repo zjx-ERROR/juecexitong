@@ -1,0 +1,73 @@
+九楼大屏应用服务器  19.130.223.57  guest/Abc@201606  root/Abc@123456  登录端口 18922 
+ 已经安装的环境
+   1.jdk
+   2.tomcat
+   3.redis
+   4.nginx
+   5.node
+   6.frontEnd  （vue打包脚手架）
+   目录都在/usr/local下
+
+	 其中redis已经设置开机自动启动，可以通过命令 service redisd start 启动，自动启动的配置文件在/etc/redis/6379.conf。
+	 详情可以查看博客https://www.cnblogs.com/zuidongfeng/p/8032505.html
+
+   九楼二期前端页面存放在
+   /usr/local/jl2q_html, 替换前推荐先将旧的目录删除
+
+
+九楼大屏数据库服务器 19.130.223.53 root/DOsbF5QO  登录端口 18922 
+ 已经安装的环境
+ 	1.mysql
+ 	目录在/usr/local下
+
+
+ 新版九楼大屏的应用服务器 19.130.223.136 guest/Abc@201606   root/Abc@123456  登录端口 18922
+  已经安装的环境
+	1.jdk
+	2.tomcat
+	目录在/tools/software
+
+
+
+决策系统互联网服务器  120.31.140.112  root/jcxt@123456   登录端口 22 
+ 已经安装的环境
+   1.jdk
+   2.tomcat
+   3.redis
+   4.nginx
+   5.node
+   6.frontEnd  （vue打包脚手架）
+   7.mysql
+   目录都在/data/fdisks/usr/local下
+
+	 其中redis已经设置开机自动启动，可以通过命令 service redisd start 启动，自动启动的配置文件在/etc/redis/6379.conf。
+	 详情可以查看博客https://www.cnblogs.com/zuidongfeng/p/8032505.html
+
+
+   决策系统的前端页面存放在
+   /data/fdisks/usr/local目录，名为componentManagementFront,前端们打包后发过来的文件，你重命名为componentManagementFront，建议先将服务器上的componentManagementFront删除再上传即可。
+
+
+
+91window服务器 192.168.5.91 gy 12345678
+ 经安装的环境
+   1.jdk
+   2.tomcat   安装目录 D:\apache-tomcat-7.0.77
+   3.redis    安装目录 C:\Program Files\Redis
+   4.nginx            C:\Users\GY\Desktop\nginx-1.12.0
+   5.frontEnd         D:\frontEnd
+
+
+  注意： 1. tomcat是在服务中启动的，重启的话也要在服务中重启。
+           cmd -> services.msc -> Apache Tomcat 7.0 Tomcat7
+
+         2. 如果迁移frontEnd，那么迁移后有两个地方需要npm -i
+         	D:\frontEnd 根目录 和 D:\frontEnd\base 目录
+
+         3.可以用everything快速查找文件
+
+
+我这台电脑 192.168.5.128
+
+	决策系统后台程序目录：D:\java_home\componentManagement
+	大屏后台程序目录：D:\java_home\simplebigscreen\BigScreenManager

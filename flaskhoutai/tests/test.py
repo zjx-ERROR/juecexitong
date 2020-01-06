@@ -1,0 +1,3 @@
+import uwsgi
+
+print('hah')

@@ -1,0 +1,410 @@
+2019-03-18 17:05:23,388 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/data/fdisks/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 313, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-03-20 10:23:20,908 - trace_back.py[line:19] - ERROR: 'NoneType' object has no attribute 'keys'
+Traceback (most recent call last):
+  File "/data/fdisks/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 319, in main
+    train(data)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 270, in train
+    test_reslult = c45.classifyAll(desicionTree, labels[:-1], testset)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 157, in classifyAll
+    classLabelAll.append(self.classify(inputTree, featLabels, testVec[:-1]))
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 135, in classify
+    firstStr = list(inputTree.keys())[0]
+AttributeError: 'NoneType' object has no attribute 'keys'
+2019-04-11 15:20:16,447 - trace_back.py[line:19] - ERROR: write() argument must be str, not dict
+Traceback (most recent call last):
+  File "/data/fdisks/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 321, in main
+    fp.write(data)
+TypeError: write() argument must be str, not dict
+2019-04-11 15:20:51,883 - trace_back.py[line:19] - ERROR: write() argument must be str, not dict
+Traceback (most recent call last):
+  File "/data/fdisks/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 321, in main
+    fp.write(data)
+TypeError: write() argument must be str, not dict
+2019-04-11 15:23:36,996 - trace_back.py[line:19] - ERROR: write() argument must be str, not dict
+Traceback (most recent call last):
+  File "/data/fdisks/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 321, in main
+    fp.write(data)
+TypeError: write() argument must be str, not dict
+2019-04-11 15:23:53,824 - trace_back.py[line:19] - ERROR: write() argument must be str, not dict
+Traceback (most recent call last):
+  File "/data/fdisks/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/data/fdisks/usr/local/algorithm/algolib/c45.py", line 321, in main
+    fp.write(data)
+TypeError: write() argument must be str, not dict
+2019-05-18 18:39:44,963 - trace_back.py[line:19] - ERROR: could not convert string to float: '2017-02'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 155, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 146, in check_type
+    v[v.index(i)] = float(i)
+ValueError: could not convert string to float: '2017-02'
+2019-05-18 18:45:09,857 - trace_back.py[line:19] - ERROR: could not convert string to float: '2017-02'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 155, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 146, in check_type
+    v[v.index(i)] = float(i)
+ValueError: could not convert string to float: '2017-02'
+2019-05-18 18:46:00,962 - trace_back.py[line:19] - ERROR: could not convert string to float: '2017-02'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 155, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 146, in check_type
+    v[v.index(i)] = float(i)
+ValueError: could not convert string to float: '2017-02'
+2019-05-20 23:19:42,747 - trace_back.py[line:19] - ERROR: name 'datetime' is not defined
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 160, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+NameError: name 'datetime' is not defined
+2019-05-20 23:22:20,937 - trace_back.py[line:19] - ERROR: name 'datetime' is not defined
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 160, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+NameError: name 'datetime' is not defined
+2019-05-20 23:33:17,252 - trace_back.py[line:19] - ERROR: name 'datetime' is not defined
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 160, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+NameError: name 'datetime' is not defined
+2019-05-21 10:01:07,632 - trace_back.py[line:19] - ERROR: name 'datetime' is not defined
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 160, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+NameError: name 'datetime' is not defined
+2019-05-21 10:04:26,021 - trace_back.py[line:19] - ERROR: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 163, in main
+    check = gf.level_check()
+  File "/usr/local/algorithm/algolib/gm.py", line 38, in level_check
+    lambda_k[i] = self.data.iloc[i, -1] / self.data.iloc[i + 1, -1]
+TypeError: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+2019-05-21 10:05:24,000 - trace_back.py[line:19] - ERROR: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 163, in main
+    check = gf.level_check()
+  File "/usr/local/algorithm/algolib/gm.py", line 38, in level_check
+    lambda_k[i] = self.data.iloc[i, -1] / self.data.iloc[i + 1, -1]
+TypeError: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+2019-05-21 10:06:44,424 - trace_back.py[line:19] - ERROR: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 163, in main
+    check = gf.level_check()
+  File "/usr/local/algorithm/algolib/gm.py", line 38, in level_check
+    lambda_k[i] = self.data.iloc[i, -1] / self.data.iloc[i + 1, -1]
+TypeError: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+2019-05-21 10:10:59,317 - trace_back.py[line:19] - ERROR: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 163, in main
+    check = gf.level_check()
+  File "/usr/local/algorithm/algolib/gm.py", line 38, in level_check
+    lambda_k[i] = self.data.iloc[i, -1] / self.data.iloc[i + 1, -1]
+TypeError: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+2019-05-21 10:13:38,930 - trace_back.py[line:19] - ERROR: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 163, in main
+    check = gf.level_check()
+  File "/usr/local/algorithm/algolib/gm.py", line 38, in level_check
+    lambda_k[i] = self.data.iloc[i, -1] / self.data.iloc[i + 1, -1]
+TypeError: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+2019-05-21 10:15:30,573 - trace_back.py[line:19] - ERROR: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 163, in main
+    check = gf.level_check()
+  File "/usr/local/algorithm/algolib/gm.py", line 38, in level_check
+    lambda_k[i] = self.data.iloc[i, -1] / self.data.iloc[i + 1, -1]
+TypeError: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+2019-05-21 10:24:10,534 - trace_back.py[line:19] - ERROR: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 163, in main
+    check = gf.level_check()
+  File "/usr/local/algorithm/algolib/gm.py", line 38, in level_check
+    lambda_k[i] = self.data.iloc[i, -1] / self.data.iloc[i + 1, -1]
+TypeError: unsupported operand type(s) for /: 'Timestamp' and 'Timestamp'
+2019-06-25 10:08:25,606 - trace_back.py[line:19] - ERROR: invalid literal for int() with base 10: '2018-06-24 00:00:00'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 162, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 152, in check_type
+    v[v.index(i)] = int(i)
+ValueError: invalid literal for int() with base 10: '2018-06-24 00:00:00'
+2019-06-25 10:15:51,639 - trace_back.py[line:19] - ERROR: division by zero
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 317, in main
+    train(data)
+  File "/usr/local/algorithm/algolib/c45.py", line 281, in train
+    {'name': cf[0], 'value': importlib.import_module(cf[1]).evaluate(testset_tmp, test_reslult), 'ins': '','conclusion':cf[2]})
+  File "/usr/local/algorithm/evaluate/accuracy_evaluate.py", line 12, in evaluate
+    return len(right_classLabel) / len(new_classLabel)
+ZeroDivisionError: division by zero
+2019-10-15 19:24:16,557 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:38:38,133 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:46:12,701 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:48:03,526 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:48:08,668 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:48:51,807 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:50:12,606 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:52:10,468 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:53:27,906 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 19:59:39,036 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:03:00,202 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:08:35,675 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:12:21,418 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:17:29,388 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:18:18,082 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 314, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:22:02,718 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 315, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:27:21,920 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 317, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:28:17,112 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 318, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 20:30:05,198 - trace_back.py[line:19] - ERROR: 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/c45.py", line 318, in main
+    data = coll.find_one({'id': jsonid})['data']
+TypeError: 'NoneType' object is not subscriptable
+2019-10-15 21:17:21,512 - trace_back.py[line:19] - ERROR: time data '477' does not match format '%Y'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 162, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 565, in _strptime_datetime
+    tt, fraction = _strptime(data_string, format)
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 362, in _strptime
+    (data_string, format))
+ValueError: time data '477' does not match format '%Y'
+2019-10-15 21:17:21,822 - trace_back.py[line:19] - ERROR: time data '477' does not match format '%Y'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 162, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 565, in _strptime_datetime
+    tt, fraction = _strptime(data_string, format)
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 362, in _strptime
+    (data_string, format))
+ValueError: time data '477' does not match format '%Y'
+2019-10-15 21:18:13,784 - trace_back.py[line:19] - ERROR: time data '477' does not match format '%Y'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 162, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 565, in _strptime_datetime
+    tt, fraction = _strptime(data_string, format)
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 362, in _strptime
+    (data_string, format))
+ValueError: time data '477' does not match format '%Y'
+2019-10-15 21:18:33,774 - trace_back.py[line:19] - ERROR: time data '477' does not match format '%Y'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 162, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 565, in _strptime_datetime
+    tt, fraction = _strptime(data_string, format)
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 362, in _strptime
+    (data_string, format))
+ValueError: time data '477' does not match format '%Y'
+2019-10-15 21:19:02,468 - trace_back.py[line:19] - ERROR: time data '477' does not match format '%Y'
+Traceback (most recent call last):
+  File "/usr/local/algorithm/algolib/trace_back.py", line 17, in wapper
+    func(*args, **kwargs)
+  File "/usr/local/algorithm/algolib/gm.py", line 162, in main
+    pre_data = check_type(data['data'])
+  File "/usr/local/algorithm/algolib/gm.py", line 151, in check_type
+    v[v.index(i)] = str_to_datetime(i)
+  File "/usr/local/algorithm/algolib/gm.py", line 140, in str_to_datetime
+    dt = datetime.strptime(t, '-'.join(d[:line_count+1]) if line_count > 0 else d[0])
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 565, in _strptime_datetime
+    tt, fraction = _strptime(data_string, format)
+  File "/usr/local/python3.6/lib/python3.6/_strptime.py", line 362, in _strptime
+    (data_string, format))
+ValueError: time data '477' does not match format '%Y'
