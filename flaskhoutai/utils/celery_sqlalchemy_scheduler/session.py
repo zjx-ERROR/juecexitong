@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
 from kombu.utils.compat import register_after_fork
-
+from instance import config
 ModelBase = declarative_base()
 
 
@@ -68,3 +68,6 @@ class SessionManager(object):
         engine, session = self.create_session(dburi, **kwargs)
         self.prepare_models(engine)
         return session()
+
+session_manager = SessionManager()
+engine, Session = session_manager.create_session(config.beat_dburi,pool_size=config.SQLALCHEMY_POOL_SIZE,max_overflow=config.SQLALCHEMY_MAX_OVERFLOW)

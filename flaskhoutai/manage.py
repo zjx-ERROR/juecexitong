@@ -5,13 +5,14 @@ from app import create_app
 from flask import request, jsonify, g
 from utils.token_utils import ResolveCacheToken
 from instance import config
+import re
 
 
 app = create_app()
 
 @app.before_request
 def tokenverify():
-    if request.path == "/websocket/sysupervisord":
+    if re.search('^/(websocket|admin)',request.path):
         pass
     elif request.method == "POST":
         if request.path == "/backstage/login/":

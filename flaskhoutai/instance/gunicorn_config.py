@@ -15,6 +15,7 @@ worker_class = 'utils.websocket_util.worker'
 max_requests = 5000
 max_requests_jitter = 1000
 keepalive = 60
+timeout = 200
 
 ## security
 limit_request_line = 4094

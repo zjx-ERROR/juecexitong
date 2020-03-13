@@ -1,5 +1,5 @@
 #! usr/bin/python
-
+# -*- coding: utf-8 -*-
 from flask import Blueprint, request, jsonify, Response, g
 from instance import config
 import pymysql
@@ -12,6 +12,10 @@ from utils.dbutils import mysqlpool
 import cx_Oracle
 import uuid
 from math import ceil
+import demjson
+from utils.celery_sqlalchemy_scheduler.models import PeriodicTask, IntervalSchedule, CrontabSchedule
+from utils.celery_sqlalchemy_scheduler.session import session_cleanup
+from utils.celery_sqlalchemy_scheduler.session import Session
 
 # 创建数据采集的蓝图
 collect_data = Blueprint("collect_data", __name__)
@@ -109,14 +113,15 @@ def show_table_name():
     """显示分组表的每张表"""
     json_data = request.get_json()
     # table_id = json_data.get("id")
-    type_id = json_data.get("type_id")
+    # type_id = json_data.get("groupid")
+    type_id = json_data.get("id")
     uid = g.token.get("id")
     if type_id != None:
         conn = mysqlpool.get_conn()
         with conn.swich_db("%s_db"%uid, cursor=pymysql.cursors.Cursor) as cursor:
             all_db = conn.query_all(
-                "SELECT a.id, a.worksheet_name,a.worksheet_name_cn,a.origin_type_id,b.data_origin_type from {TABLE_NAME1}  a left join {TABLE_NAME2}  b on a.origin_type_id = b.id".format(
-                    TABLE_NAME1=config.ME2_TABLENAME2, TABLE_NAME2=config.ME2_TABLENAME3))
+                "SELECT a.id, a.worksheet_name,a.worksheet_name_cn,a.origin_type_id,b.data_origin_type from {TABLE_NAME1}  a left join {TABLE_NAME2}  b on a.origin_type_id = b.id where a.groupid = {GROUP_ID}".format(
+                    TABLE_NAME1=config.ME2_TABLENAME2, TABLE_NAME2=config.ME2_TABLENAME3, GROUP_ID=type_id))
             group_name = conn.query_one('select type_name from {} where groupid ={}'.format(config.ME2_TABLENAME1,type_id))
             if not all_db:
                 return Response(json.dumps({"code": 1, "data": {"msg": [], "group_name": group_name,
@@ -149,8 +154,10 @@ def connect_db():
     sourceid = obj.get("id")
     uid = g.token.get("id")
 
-    if sourceid != None and sourceid != "":
+    data = obj.get("formDataBase")
 
+    if sourceid != None and sourceid != "":
+        
         conn = mysqlpool.get_conn()
         with conn.swich_db(config.WOWRKSHEET01, cursor=pymysql.cursors.Cursor) as cursor:
             data = conn.query_one(
@@ -162,11 +169,14 @@ def connect_db():
         else:
             return jsonify({"code": -1, "data": None})
         method = 3
+        
     else:
-        data = obj.get("formDataBase")
+        sourceid = str(uuid.uuid1())
         method = obj.get("type")
-    redis.hmset(token, data)
-    redis.expire(token, 1800)
+    data["sourceid"] = sourceid
+
+    redis.hmset("%s:dbmsg"%token, data)
+    redis.expire("%s:dbmsg"%token, 1800)
     pre_link = data.get("address")
     host, pad = pre_link.split(":")
     port, databasename = pad.split("/")
@@ -197,13 +207,13 @@ def connect_db():
                 mycur.close()
                 return jsonify(conn_status)
             elif method == 2:
-                mark = str(uuid.uuid1())
+                
                 conn = mysqlpool.get_conn()
                 with conn.swich_db(config.WOWRKSHEET01) as cursor:
                     conn.insert_one(
                         "insert into {}(id,sourceName,sourceType,link,account,password,remark,createDate,uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(
                             config.TABLENAME4),
-                        [mark, source_name, dbtype, pre_link, user, password, remark,
+                        [sourceid, source_name, dbtype, pre_link, user, password, remark,
                          datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), uid])
                 rentun_msg.update({"msg": "保存成功"})
             mycur.execute("show tables")
@@ -228,13 +238,12 @@ def connect_db():
                 mycur.close()
                 return jsonify(conn_status)
             elif method == 2:
-                mark = str(uuid.uuid1())
                 conn = mysqlpool.get_conn()
                 with conn.swich_db(config.WOWRKSHEET01) as cursor:
                     conn.insert_one(
                         "insert into {}(id,sourceName,sourceType,link,account,password,remark,createDate,uid) values(%s,%s,%s,%s,%s,%s,%s,%s,%s)".format(
                             config.TABLENAME4),
-                        [mark, source_name, dbtype, pre_link, user, password, remark,
+                        [sourceid, source_name, dbtype, pre_link, user, password, remark,
                          datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), uid])
                 rentun_msg.update({"msg": "保存成功"})
             mycur.execute("select OWNER,TABLE_NAME from all_tables")
@@ -255,15 +264,19 @@ def return_table_msg():
     table_name = obj.get("table_name")
     token = obj["token"]
     customize_sql = obj.get("customize_sql")
-    page = int(obj.get("page")) - 1
-    page_size = int(obj.get("page_size"))
-    dbmsg = redis.hgetall(token)
+    page = obj.get("page")
+    page = int(page) - 1 if page != None else page
+    page_size = obj.get("page_size")
+    page_size = int(page_size) if page_size != None else page_size
+    dbmsg = redis.hgetall("%s:dbmsg"%token)
     if not dbmsg:
         return jsonify({"code": -1, "data": "请求超时"})
+    if customize_sql:
+        dbmsg['customize_sql'] = customize_sql
     dbmsg['table_name'] = table_name
 
-    redis.hmset(token, dbmsg)
-    redis.expire(token, 1800)
+    redis.hmset("%s:dbmsg"%token, dbmsg)
+    redis.expire("%s:dbmsg"%token, 1800)
 
     uid = g.token.get("id")
     pre_link = dbmsg["address"]
@@ -283,16 +296,15 @@ def return_table_msg():
 
         cur = db.cursor(cursor=pymysql.cursors.DictCursor)
         cur.execute("select count(*) from %s" % table_name)
-        whole_page = ceil(list(cur.fetchone().values())[0] / page_size)
-        sql = "select * from %s limit %s,%s;" % (table_name, page * page_size, page_size)
-
+        cfo = cur.fetchone()
+        
         if customize_sql:
             if customize_sql.lower().startswith("select"):
                 sql = customize_sql
-                sql_split = customize_sql.split(" ")
-                table_name = sql_split[sql_split.index("from") + 1]
             else:
                 return jsonify({"code": -1, "data": "查询失败"})
+        else:
+            sql = "select * from %s limit %s,%s;" % (table_name, page * page_size, page_size)
         try:
             cur.execute(sql)
         except Exception as e:
@@ -301,14 +313,24 @@ def return_table_msg():
             return jsonify({"code": -1, "data": "查询失败"})
         else:
             fetdata = cur.fetchall()
-            cur.execute('show columns from %s;' % table_name)
-            pre_data = cur.fetchall()
-
-            field_type = dict(zip([list(i.values())[0] for i in pre_data], [list(i.values())[1] for i in pre_data]))
+            redis.set("%s:%s"%(token,table_name), demjson.encode(fetdata,encoding="utf-8"))
+            redis.expire("%s:%s"%(token,table_name), 1800)
+            if page_size != None:
+                whole_page = ceil(list(cfo.values())[0] / page_size)
+                cur.execute('show columns from %s;' % table_name)
+                pre_data = cur.fetchall()
+                field_type = dict(zip([list(i.values())[0] for i in pre_data], [list(i.values())[1] for i in pre_data]))
+            
+            else:
+                whole_page = len(fetdata)
+                pre_data = list(fetdata[0].keys())
+                field_type = {}
+                for pd in pre_data:
+                    field_type[pd] = "varchar(255)"
+            
             cur.close()
             db.close()
-            return Response(json.dumps({"code": 1, "data": fetdata, "field_type": field_type, "whole_page": whole_page},
-                                       cls=DateEncoder), mimetype='application/json')
+            return Response(demjson.encode({"code": 1, "data": fetdata, "field_type": field_type, "whole_page": whole_page}), mimetype='application/json')
 
     elif dbtype.lower() == "oracle":
         from utils.dbutils import makeDictFactory
@@ -317,16 +339,16 @@ def return_table_msg():
 
         cur = conn.cursor()
         cur.execute("select count(*) from %s" % table_name.upper())
-        whole_page = ceil(cur.fetchone()[0] / page_size)
-        sql = "select * from {TABLE} where rowid in (select rid from (select rownum rn,rid from (select rowid rid from {TABLE}) where rownum < {UL}) where rn > {LL})".format(
-            TABLE=table_name.upper(), UL=page_size + page * page_size, LL=page * page_size)
+        cfo = cur.fetchone()
+        
         if customize_sql:
             if customize_sql.lower().startswith("select"):
                 sql = customize_sql
-                sql_split = customize_sql.split(" ")
-                table_name = sql_split[sql_split.index("from") + 1].replace(".", "_")
             else:
                 return jsonify({"code": -1, "data": "查询失败"})
+        else:
+            sql = "select * from {TABLE} where rowid in (select rid from (select rownum rn,rid from (select rowid rid from {TABLE}) where rownum < {UL}) where rn > {LL})".format(
+            TABLE=table_name.upper(), UL=page_size + page * page_size, LL=page * page_size)
         try:
             cur.execute(sql)
             cur.rowfactory = makeDictFactory(cur)
@@ -336,6 +358,13 @@ def return_table_msg():
             return jsonify({"code": -1, "data": "查询失败"})
         else:
             fetdata = cur.fetchall()
+            redis.set("%s:%s"%(token,table_name), demjson.encode(fetdata,encoding="utf-8"))
+            redis.expire("%s:%s"%(token,table_name), 1800)
+            if page_size != None:
+                whole_page = ceil(list(cfo.values())[0] / page_size)
+            else:
+                whole_page = whole_page = len(fetdata)
+            
             t_o_l = table_name.split('.')
             cur.execute(
                 "select column_name,data_type from all_tab_columns WHERE TABLE_NAME = '%s' and OWNER = '%s'" % (
@@ -360,107 +389,104 @@ def save_table():
     table_type = obj["tableType"]
     change_table_datas = obj["changeTableDatas"]
 
-    cash_msg = redis.hgetall(token)
+    cash_msg = redis.hgetall("%s:dbmsg"%token)
     pre_link = cash_msg["address"]
     host, pad = pre_link.split(":")
     port, databasename = pad.split("/")
     user = cash_msg["userName"]
     password = cash_msg["password"]
     dbtype = cash_msg["dataBaseType"]
-    table_name = cash_msg['table_name']  # 表名
+    table_name = cash_msg["table_name"]
+    sourceid = cash_msg.get("sourceid")
+    remark = obj.get('remark') # 定时任务描述
 
-    # 获取数据库连接cur和创建表语句create_table_msg
-    if dbtype.lower() == "mysql":
-        db = pymysql.connect(
-            host="{}".format(host),
-            user="{}".format(user),
-            port=int(port),
-            password="{}".format(password),
-            db=databasename
-        )
-
-        cur = db.cursor(cursor=pymysql.cursors.DictCursor)
-        cur.execute("show create table %s;" % table_name)
-        create_table_msg = cur.fetchall()[0]
-        cur.execute("show columns from %s;" % table_name)
-        columns = [list(i.values())[0] for i in cur.fetchall()]
-
-        sql = "select * from %s" % (table_name)
-        res_num = cur.execute(sql)
-        dbmsg = cur.fetchmany(config.DATA_PRETREATMENT_SIZE)
-
-    elif dbtype.lower() == "oracle":
-        from utils.dbutils import makeDictFactory
-        dsn = cx_Oracle.makedsn(host, port, databasename)
-        conn = cx_Oracle.connect(user=user, password=password, dsn=dsn, encoding="UTF-8")
-
-        cur = conn.cursor()
-        t_o_l = table_name.split('.')
-        cur.execute(
-            "select column_name from all_tab_columns WHERE TABLE_NAME = '%s' and OWNER = '%s'" % (
-                t_o_l[1], t_o_l[0]))
-
-        fetdata = cur.fetchall()
-        columns = [i[0] for i in fetdata]
-
-        my_table_name = table_name.replace('.', '_')
-
-        create_table_msg = {'Table': my_table_name}
-        create_table_msg['Create Table'] = 'CREATE TABLE `%s`(' % my_table_name
-
-        for i in columns:
-            create_table_msg['Create Table'] += '`%s` varchar(255),' % i
-        create_table_msg['Create Table'] += ') ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT'
-
-        sql = "select * from %s" % table_name
-        res_num = cur.execute(sql)
-        cur.rowfactory = makeDictFactory(cur)
-        dbmsg = cur.fetchmany(config.DATA_PRETREATMENT_SIZE)
+    crontab = obj.get('crontab')
+    crontab_hour = obj.get('crontabHour')
+    crontab_minute = obj.get('crontabMinute')
+    update_frequency = obj.get('updateFrequency') # 更新频率
+    every_value = obj.get('every') # 间隔值
+    update_type = obj.get("updateType")
 
     conn = mysqlpool.get_conn()
     with conn.swich_db("%s_db" % uid) as cursor:
         for ctd in change_table_datas:
-            try:
-                tb_name = ctd["tableName"] if ctd["tableName"] else create_table_msg["Table"]
-            except Exception as e:
-                return jsonify({"code": -1, "data": "操作超时"})
-            if conn.query_one('select * from {} where worksheet_name = %s'.format(config.ME2_TABLENAME2),
-                              tb_name):
-                return jsonify({"code": -1, "data": "%s表已存在" % tb_name})
-            else:
-                conn.drop('drop table if EXISTS %s' % tb_name)
-                conn.drop('drop table if EXISTS %s' % (tb_name + "_cn"))
-                conn.commit()
-                try:
-                    conn.insert_one(
-                        'insert into {}(worksheet_name,types,worksheet_name_cn,groupid,origin_type_id) values(%s,%s,%s,%s,%s)'.format(
-                            config.ME2_TABLENAME2),
-                        [tb_name, dbtype, ctd["chineseTableName"], ctd["groupName"], table_type])
-                except Exception as e:
-                    return jsonify({"code": -1, "data": "插入关键数据失败"})
-                try:
-                    conn.create(
-                        'create table ' + tb_name + '_cn' + ' (id int primary key auto_increment,prime_name varchar(128),cn_name varchar(128),status int default 1)')
-                except Exception as e:
-                    return jsonify({"code": -1, "data": "创建失败"})
-                try:
-                    conn.insert_many(
-                        'insert into ' + tb_name + '_cn' + '(prime_name,cn_name,status) values(%s,%s,%s)',
-                        [(i["englishName"], i["chineseName"], i["code"]) for i in ctd["tableField"]])
-                except Exception as e:
-                    return jsonify({"code": -1, "data": "插入数据失败"})
-                try:
-                    conn.create(create_table_msg["Create Table"])
-                    baifens = '%s'
-                    for j in range(len(columns) - 1):
-                        baifens += ',%s'
-                    conn.insert_many('insert into ' + tb_name + ' values(' + baifens + ')',
-                                    [tuple(i.values()) for i in dbmsg])
-                except Exception as e:
-                    return jsonify({"code": -1, "data": "操作失败"})
-                #if res_num > config.DATA_PRETREATMENT_SIZE:
-                    #rdb_migrade.apply_async((cash_msg, uid, tb_name, baifens))  # 异步任务
+            tb_name = '%s'%(uuid.uuid4())
 
+            conn.drop('drop table if EXISTS `%s`' % tb_name)
+            conn.drop('drop table if EXISTS `%s`' % (tb_name + "_cn"))
+            conn.commit()
+            try:
+                conn.insert_one(
+                    'insert into {}(worksheet_name,types,worksheet_name_cn,groupid,origin_type_id) values(%s,%s,%s,%s,%s)'.format(
+                        config.ME2_TABLENAME2),
+                    [tb_name, dbtype, ctd["chineseTableName"], ctd["groupName"], table_type])
+            except Exception as e:
+                return jsonify({"code": -1, "data": "插入关键数据失败","mis":repr(e)})
+            try:
+                conn.create(
+                    'create table `' + tb_name + '_cn`' + ' (id int primary key auto_increment,prime_name varchar(128),cn_name varchar(128),status int default 1)')
+            except Exception as e:
+                return jsonify({"code": -1, "data": "创建失败"})
+            try:
+                conn.insert_many(
+                    'insert into `' + tb_name + '_cn`' + '(prime_name,cn_name,status) values(%s,%s,%s)',
+                    [(i["englishName"], i["chineseName"], i["code"]) for i in ctd["tableField"]])
+            except Exception as e:
+                return jsonify({"code": -1, "data": "插入数据失败"})
+            try:
+                dbmsg = demjson.decode(redis.get("%s:%s"%(token,table_name)),encoding="utf-8")
+
+                columns = [list(i.keys()) for i in dbmsg][0]
+                baifens = '%s,'
+                field_sentence = ""
+                for j in range(len(columns)):
+                    field_sentence += "`%s` varchar(255),"%columns[j] 
+                    baifens += '%s,'
+                create_table_msg = "CREATE TABLE `%s` (`worksheet_id` varchar(32) NOT NULL,"%tb_name + field_sentence + "UNIQUE KEY `worksheet_id` (`worksheet_id`) USING BTREE) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC"
+                conn.create(create_table_msg)
+                    
+                insert_sentence = 'insert into `%s` (%s)'%(tb_name,"worksheet_id,%s"%','.join(["`%s`"%c for c in columns])) + ' values(' + baifens[:-1] + ')'
+                insert_data = [tuple([TokenMaker().generate_token('worksheet_id',demjson.encode(i.values(),encoding="utf-8"))]+list(i.values())) for i in dbmsg]
+                conn.insert_many(insert_sentence,insert_data)
+            except Exception as e:
+                # raise e
+                return jsonify({"code": -1, "data": "操作失败","insert_sentence":insert_sentence,"insert_data":insert_data})
+
+
+    datetimenow = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    task_id = TokenMaker().generate_token(token,datetime.datetime.now())
+    try:
+        if crontab == 0:
+            conn = mysqlpool.get_conn()
+            with conn.swich_db(config.WOWRKSHEET01,cursor=pymysql.cursors.Cursor) as cursor:
+                conn.insert_one("insert into {TABLE}(id,uid,remark,crontabtype,origin_table_name,table_name,datasource_id,create_datetime) values(%s,%s,%s,%s,%s,%s,%s,%s)".format(TABLE=config.TABLENAME54)
+                    ,[task_id,uid,cash_msg["remark"],crontab,cash_msg["table_name"],tb_name,sourceid,datetimenow])
+            beat_session = Session()
+            with session_cleanup(beat_session):
+                schedule = beat_session.query(IntervalSchedule).filter_by(every=every_value,period=getattr(IntervalSchedule,update_frequency)).first()
+                if not schedule:
+                    schedule = IntervalSchedule(every=every_value, period=getattr(IntervalSchedule,update_frequency))
+                    beat_session.add(schedule)
+                task = PeriodicTask(id=task_id,uid=uid,interval=schedule,name='dbcrawl_task_%s'%task_id,task='tasks.tasks_general.dbcrawl',args=json.dumps([tb_name,cash_msg["table_name"],cash_msg["sourceid"],uid,cash_msg.get('customize_sql')]),last_run_at=datetimenow,description=remark,table_name=tb_name)
+                beat_session.add(task)
+                beat_session.commit()
+        elif crontab == 1:
+            conn = mysqlpool.get_conn()
+            with conn.swich_db(config.WOWRKSHEET01,cursor=pymysql.cursors.Cursor) as cursor:
+                conn.insert_one("insert into {TABLE}(id,uid,remark,crontabtype,origin_table_name,table_name,datasource_id,create_datetime) values(%s,%s,%s,%s,%s,%s,%s,%s)".format(TABLE=config.TABLENAME54)
+                    ,[task_id,uid,cash_msg["remark"],crontab,cash_msg["table_name"],tb_name,sourceid,datetimenow])
+            beat_session = Session()
+            with session_cleanup(beat_session):
+                schedule = beat_session.query(CrontabSchedule).filter_by(minute=crontab_minute,hour=crontab_hour,timezone=config.TIMEZONE).first()
+                if not schedule:
+                    schedule = CrontabSchedule(minute=crontab_minute,hour=crontab_hour,timezone=config.TIMEZONE)
+                    beat_session.add(schedule)
+                task = PeriodicTask(id=task_id,uid=uid,crontab=schedule,name='dbcrawl_task_%s'%task_id,task='tasks.tasks_general.dbcrawl',args=json.dumps([tb_name,cash_msg["table_name"],cash_msg["sourceid"],uid,cash_msg.get('customize_sql')]),last_run_at=datetimenow,description=remark,table_name=tb_name)
+                beat_session.add(task)
+                beat_session.commit()
+    except Exception as e:
+        raise e
+        return jsonify({"code": -1, "data": "定时任务失败"})
     return jsonify({"code": 1, "data": "操作成功"})
 
 @collect_data.route("/worksheet_entity/", methods=['POST'])
@@ -475,8 +501,11 @@ def worksheet_entity():
     conn = mysqlpool.get_conn()
     with conn.swich_db("%s_db"%uid) as cursor:
         try:
-            worksheet_entity = conn.query_all("select * from %s" % worksheet_name)
+            worksheet_entity = conn.query_all("select * from `%s`" % worksheet_name)
+            for i in worksheet_entity:
+                i["dataid"]=worksheet_entity.index(i)
         except Exception as e:
+            raise e
             return jsonify({"code": -1, "data": "操作失败"})
         try:
             predata = conn.query_one(
@@ -484,21 +513,35 @@ def worksheet_entity():
                 worksheet_name)
             sheet_cn = list(predata.values())[0]
         except Exception as e:
+            raise e
             return jsonify({"code": -1, "data": "操作失败"})
         try:
             table_cn = worksheet_name + '_cn'
-            field_status = conn.query_all('select prime_name,cn_name,status from %s' % table_cn)
+            field_status = conn.query_all('select prime_name,cn_name,status from `%s`' % table_cn)
         except Exception as e:
             field_status = None
         try:
-            pre_data = conn.query_all('show columns from %s;' % worksheet_name)
+            pre_data = conn.query_all('show columns from `%s`;' % worksheet_name)
             field_type = dict(zip([list(i.values())[0] for i in pre_data], [list(i.values())[1] for i in pre_data]))
         except Exception as e:
             field_type = None
-
-    return jsonify(
+    conn = mysqlpool.get_conn()
+    with conn.swich_db(config.WOWRKSHEET01) as cursor:
+    # 任务id
+        try:
+            task_msg = conn.query_one("select a.id,a.last_run_at,a.total_run_count,a.description,c.every,c.period from {TABLE2} a,{TABLE1} b,{TABLE3} c where b.uid=%s and b.tableName=%s and a.id=b.id and a.interval_id=c.id".format(TABLE1=config.TABLENAME49,TABLE2=config.TABLENAME50,TABLE3=config.TABLENAME51),[uid,worksheet_name])
+            crontab = 0
+            if not task_msg:
+                task_msg = conn.query_one("select a.id,a.last_run_at,a.total_run_count,a.description,c.minute,c.hour from {TABLE2} a,{TABLE1} b,{TABLE3} c where b.uid=%s and b.tableName=%s and a.id=b.id and a.crontab_id=c.id".format(TABLE1=config.TABLENAME49,TABLE2=config.TABLENAME50,TABLE3=config.TABLENAME53),[uid,worksheet_name])
+                crontab = 1
+            elif not task_msg:
+                task_msg = None
+                crontab = None
+        except:
+            task_msg = None
+    return Response(json.dumps(
         {"code": 1, "data": worksheet_entity, 'worksheet_name_cn': sheet_cn, 'field_status': field_status,
-         'field_type': field_type})
+         'field_type': field_type,"task_msg": task_msg},cls=DateEncoder))
 
 
 @collect_data.route("/drop_worksheet/", methods=['POST'])
@@ -625,53 +668,3 @@ def return_dbsource_msg():
 
 
 
-
-
-from tasks.celery import celery
-from tasks.tasks_general import add
-@collect_data.route("/testtask/", methods=['POST'])
-def testtask():
-    res = add.apply_async((3,7),countdown=120,queue='schedule_tasks',routing_key='schedule_tasks')
-    return jsonify({'code':1,'id':res.task_id})
-
-
-from utils.celery_sqlalchemy_scheduler.models import PeriodicTask, IntervalSchedule
-from tasks.celery import beat_session
-
-@collect_data.route("/taskschedule/", methods=['POST'])
-def taskschedule():
-    token = g.token.get('token')
-    schedule = IntervalSchedule(every=20, period=IntervalSchedule.SECONDS)
-    task_id = TokenMaker().generate_token(token,datetime.datetime.now())
-    task = PeriodicTask(id=task_id,interval=schedule,name='my_task',task='tasks.tasks_general.add',args=json.dumps([16,16]))
-    beat_session.add(task)
-    beat_session.commit()
-    return jsonify({'code':1,'id':task_id,'model':'PeriodicTask'})
-
-from tasks.celery import CeleryResult
-@collect_data.route("/queryresult/", methods=['POST'])
-def queryresult():  
-    json_data = request.get_json()
-    task_id = json_data.get('task_id')
-    state = CeleryResult(task_id).state
-    return jsonify({'code':1,'state':state})
-
-@collect_data.route("/tasksrevoke/", methods=['POST'])
-def tasksrevoke():  
-    json_data = request.get_json()
-    task_id = json_data.get('task_id')
-    celery.control.terminate(task_id,signal='SIGKILL')
-
-    return jsonify({'code':1})
-
-import importlib
-@collect_data.route("/intervaltasksrevoke/", methods=['POST'])
-def intervaltasksrevoke():  
-    json_data = request.get_json()
-    task_id = json_data.get('task_id')
-    model = json_data.get('model')
-    beat_model = importlib.import_module('utils.celery_sqlalchemy_scheduler.models').__getattribute__(str(model))
-    beat_row = beat_session.query(beat_model).filter(beat_model.id==task_id).first()
-    beat_row.enabled = 0
-    beat_session.commit()
-    return jsonify({'code':1})

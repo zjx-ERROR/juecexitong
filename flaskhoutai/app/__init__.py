@@ -8,7 +8,8 @@ from flask import Flask
 # from flask_cors import CORS
 from utils.dbutils import redis
 from utils.websocket_util import Sockets
-
+from utils.admin_util import admin
+from utils.dbutils import db
 
 def create_app():
     """创建app"""
@@ -23,7 +24,8 @@ def create_app():
     # 加载socket
     sockets = Sockets(app)
     redis.init_app(app)
-    
+    admin.init_app(app)
+    db.init_app(app)
     # 接口返回乱码问题
     app.config['JSON_AS_ASCII'] = False
 

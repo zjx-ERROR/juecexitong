@@ -50,72 +50,145 @@ def return_relation_worksheets():
     json_data = request.get_json()
     file_name = json_data["worksheet_name"]
     uid= g.token["id"]
-    try:
-        content_list = []
-        conn = mysqlpool.get_conn()
-        with conn.swich_db("%s_db"%uid) as cursor:
-            if file_name == "":
-                return jsonify({
-                    "code": 1,
-                    "data": content_list
+    content_list = []
+    conn = mysqlpool.get_conn()
+    with conn.swich_db("%s_db" % uid) as cursor:
+        if file_name == "":
+            return jsonify({
+                "code": 1,
+                "data": content_list
 
-                })
-            if conn.query_one("select * from association_table_relation where begin_table ='{}' or end_table='{}'".
-                                      format(file_name, file_name)):
-                if conn.query_one(
-                        "select end_table from association_table_relation where begin_table='{}'".format(file_name)):
-                    obj_en = conn.query_all(
-                        "select end_table from association_table_relation where begin_table='{}'".format(file_name))
-                else:
-                    obj_en = []
-                if conn.query_all(
-                        "select begin_table from association_table_relation where end_table='{}'".format(file_name)):
-                    obj_be = conn.query_all(
-                        "select begin_table from association_table_relation where end_table='{}'".format(file_name))
-                else:
-                    obj_be = []
-                for i in obj_be:
-                    obj_en.append(i)
-                obj_en.insert(0, {"worksheet_name": file_name})
-                for j in obj_en:
-                    value = list(j.values())[0]
-                    cn_name__ = conn.query_all(
-                        "select file_name_cn from association_table where file_name={}".format(repr(value)))
-                    cn_name = cn_name__[0]
-                    d = {list(j.values())[0]: list(cn_name.values())[0]}
-                    table_name = value + "_" + "cn"
-                    obj = conn.query_all("select * from {}".format(table_name))
-                    obj.append(d)
-                    content_list.append(obj)
-                return jsonify({
-                    "code": 1,
-                    "data": content_list
-
-                })
+            })
+        if conn.query_one("select * from association_table_relation where begin_table ='{}' or end_table='{}'".
+                                  format(file_name, file_name)):
+            if conn.query_one(
+                    "select end_table from association_table_relation where begin_table='{}'".format(file_name)):
+                obj_en = conn.query_all(
+                    "select end_table from association_table_relation where begin_table='{}'".format(file_name))
             else:
+                obj_en = []
+            if conn.query_all(
+                    "select begin_table from association_table_relation where end_table='{}'".format(file_name)):
+                obj_be = conn.query_all(
+                    "select begin_table from association_table_relation where end_table='{}'".format(file_name))
+            else:
+                obj_be = []
+            for i in obj_be:
+                obj_en.append(i)
+            obj_en.insert(0, {"worksheet_name": file_name})
+            for j in obj_en:
+                value = list(j.values())[0]
                 cn_name__ = conn.query_all(
-                    "select worksheet_name_cn from worksheet_relation where worksheet_name={}".format(repr(file_name)))
+                    "select file_name_cn from association_table where file_name={}".format(repr(value)))
+                cn_name = cn_name__[0]
+                d = {list(j.values())[0]: list(cn_name.values())[0]}
+                table_name = value + "_" + "cn"
+                obj = conn.query_all("select * from {}".format(table_name))
+                obj.append(d)
+                content_list.append(obj)
+            return jsonify({
+                "code": 1,
+                "data": content_list
+            })
+        else:
+            # print('00000000000000000000000000')
+            if conn.query_all(
+                    "select worksheet_name_cn from worksheet_relation where worksheet_name='{}'".format(file_name)):
+                cn_name__ = conn.query_all(
+                    "select worksheet_name_cn from worksheet_relation where worksheet_name='{}'".format(file_name))
                 cn_name = cn_name__[0]
                 d = {'{}'.format(file_name): list(cn_name.values())[0]}
                 table_name = file_name + "_" + "cn"
-                obj = conn.query_all("select * from {}".format(table_name))
+                print('11',"select * from '{}'".format(table_name))
+                obj = conn.query_all("select * from `{}`".format(table_name))
                 obj.append(d)
                 content_list.append(obj)
                 return jsonify({
                     "code": 1,
                     "data": content_list
                 })
-    except Exception as e:
-        return jsonify({
-            "code": -1,
-            "msg": repr(e)
-        })
+            else:
+                return jsonify({
+                    "code": 1,
+                    "data": []
+                })
+    #
+    # try:
+    #     content_list = []
+    #     conn = mysqlpool.get_conn()
+    #     with conn.swich_db("%s_db"%uid) as cursor:
+    #         if file_name == "":
+    #             return jsonify({
+    #                 "code": 1,
+    #                 "data": content_list
+    #
+    #             })
+    #         if conn.query_one("select * from association_table_relation where begin_table ='{}' or end_table='{}'".
+    #                                   format(file_name, file_name)):
+    #             if conn.query_one(
+    #                     "select end_table from association_table_relation where begin_table='{}'".format(file_name)):
+    #                 obj_en = conn.query_all(
+    #                     "select end_table from association_table_relation where begin_table='{}'".format(file_name))
+    #             else:
+    #                 obj_en = []
+    #             if conn.query_all(
+    #                     "select begin_table from association_table_relation where end_table='{}'".format(file_name)):
+    #                 obj_be = conn.query_all(
+    #                     "select begin_table from association_table_relation where end_table='{}'".format(file_name))
+    #             else:
+    #                 obj_be = []
+    #             for i in obj_be:
+    #                 obj_en.append(i)
+    #             obj_en.insert(0, {"worksheet_name": file_name})
+    #             for j in obj_en:
+    #                 value = list(j.values())[0]
+    #                 cn_name__ = conn.query_all(
+    #                     "select file_name_cn from association_table where file_name={}".format(repr(value)))
+    #                 cn_name = cn_name__[0]
+    #                 d = {list(j.values())[0]: list(cn_name.values())[0]}
+    #                 table_name = value + "_" + "cn"
+    #                 obj = conn.query_all("select * from {}".format(table_name))
+    #                 obj.append(d)
+    #                 content_list.append(obj)
+    #             return jsonify({
+    #                 "code": 1,
+    #                 "data": content_list
+    #             })
+    #         else:
+    #             print('00000000000000000000000000')
+    #             if conn.query_all(
+    #                 "select worksheet_name_cn from worksheet_relation where worksheet_name='{}'".format(file_name)):
+    #                 cn_name__ = conn.query_all(
+    #                     "select worksheet_name_cn from worksheet_relation where worksheet_name='{}'".format(file_name))
+    #                 cn_name = cn_name__[0]
+    #                 d = {'{}'.format(file_name): list(cn_name.values())[0]}
+    #                 table_name = file_name + "_" + "cn"
+    #                 obj = conn.query_all("select * from {}".format(table_name))
+    #                 obj.append(d)
+    #                 content_list.append(obj)
+    #                 return jsonify({
+    #                     "code": 1,
+    #                     "data": content_list
+    #                 })
+    #             else:
+    #                 return jsonify({
+    #                     "code": 1,
+    #                     "data": []
+    #         })
+    #
+    # except Exception as e:
+    #     return jsonify({
+    #         "code": -1,
+    #         "msg": repr(e)
+    #     })
 
 
 @operation_worksheet.route("/return_relation_contents/", methods=["POST"])
 def return_relation_contents():
     """关联表之间的字段内容"""
-    uid= g.token["id"]
+    # uid= g.token["id"]
+    json_data = request.get_json()
+    uid = json_data["uid"]
     try:
         json_data = request.get_json()
         columnmap = json_data["columnMap"]
@@ -545,7 +618,7 @@ def return_relation_contents():
                             where_sql = "("
                             dimension_field = i["field"]
                             dimension_return_fields = i["return_fields"]
-                            dimension_tablename = i["tablename"]
+                            dimension_tablename = "`%s`"%i["tablename"]
                             dimension_haveNull = i["haveNull"]
 
                             if len(dimension_return_fields) >= 1:
@@ -593,7 +666,7 @@ def return_relation_contents():
                             where_sql = "("
                             measure_field = j["field"]
                             measure_return_fields = j["return_fields"]
-                            measure_tablename = j["tablename"]
+                            measure_tablename = "`%s`"%j["tablename"]
                             if len(measure_return_fields) >= 1:
                                 for a in measure_return_fields:
                                     if a["condition"] == -1:
@@ -626,14 +699,15 @@ def return_relation_contents():
 
                     # 判断查询表 是否有 维度字段上是否有重复数据
                     is_group_by = " group by "
-                    is_data = conn.query_all(
-                        "select {sql_x_columnName1}  from {schema} {sql_is_where} {dimension_where}{dimension_and_measure} {measure_where} group by {sql_x_columnName2} having count(*)>1".format(
+                    select_sentence = "select {sql_x_columnName1}  from `{schema}` {sql_is_where} {dimension_where}{dimension_and_measure} {measure_where} group by {sql_x_columnName2} having count(*)>1".format(
                             sql_x_columnName=sql_x_columnName, y=y, schema=schema, formula=formula,
                             sql_x_columnName1=sql_x_columnName1, sql_x_columnName2=sql_x_columnName2,
                             sql_charObjStr=sql_charObjStr, dimension_where=dimension_where,
                             measure_where=measure_where,
                             sql_is_where=sql_is_where,
-                            dimension_and_measure=dimension_and_measure))
+                            dimension_and_measure=dimension_and_measure)
+                    print("--->select_sentence<----",select_sentence)
+                    is_data = conn.query_all(select_sentence)
 
                     if is_data:
                         is_group_by = is_group_by
@@ -653,7 +727,7 @@ def return_relation_contents():
                             sql_x_columnName2 = sql_x_columnName
 
                     relation_list = conn.query_all(
-                        "select {sql_x_columnName1}, {formula}({y1})  from {schema} {sql_is_where} {dimension_where}{dimension_and_measure} {measure_where} {is_group_by} {sql_x_columnName2}{sql_charObjStr}".format(
+                        "select {sql_x_columnName1}, {formula}({y1})  from `{schema}` {sql_is_where} {dimension_where}{dimension_and_measure} {measure_where} {is_group_by} {sql_x_columnName2}{sql_charObjStr}".format(
                             sql_x_columnName=sql_x_columnName, y1=y1, schema=schema, formula=formula,
                             is_group_by=is_group_by, sql_x_columnName1=sql_x_columnName1,
                             sql_x_columnName2=sql_x_columnName2,
@@ -895,7 +969,7 @@ def tablefields_colation():
                 field = i["field"]
                 type = i["type"]
                 tablefields_lists = conn.query_all(
-                    "select {field} from {tablename} where {field} is not null".format(field=field,
+                    "select {field} from `{tablename}` where {field} is not null".format(field=field,
                                                                                        tablename=tablename))
                 tablefields_lists = list(set(tablefields_lists))
                 fields_lists = []

@@ -29,15 +29,22 @@ def login():
         with conn.swich_db(config.WOWRKSHEET01) as cursor:
             if conn.query_one(
                     "select id,DepartmentID,RoleID,UserName,RealName,Password,Mobile,Email,flag, status,remark,createDate,editDate from {} where UserName=%s".format(
-                        config.TABLENAME16), [userName]):
+                        config.TABLENAME16), userName):
                 return_list = conn.query_one(
                     "select id,DepartmentID,RoleID,UserName,RealName,Password,Mobile,Email,flag, status,remark,createDate,editDate from {} where UserName=%s".format(
-                        config.TABLENAME16), [userName])
+                        config.TABLENAME16), userName)
                 # 账号密码正确
                 if return_list["UserName"] == userName and return_list["Password"] == password:
-                    # token 函数 36位
-                    token = str(uuid.uuid1())
+                    # 判断redis 是否存有用户信息
+                    token_key = ("userID:" + return_list["id"]).replace("'", "\"")
+                    conn.commit()
+                    if redis.exists(token_key):
+                        # token = redis.get(token_key).decode()
+                        token = redis.get(token_key)
+                    else:
+                        token = str(uuid.uuid1())
                     roleid = return_list["RoleID"]
+                    conn.commit()
                     # 通过 user_database表判断用户是否为新用户
                     if not conn.query_one("select dbname from {} where flag=%s and uid=%s".format(config.TABLENAME47),
                                           [1, return_list["id"]]):
@@ -128,12 +135,10 @@ def login():
                     # 存储用户具体信息  # 存储登陆用户token值
                     redis_value = "\xAC\x05t\x01D" + str(data).replace("'", "\"")
                     redis.set(redis_key, redis_value)
-                    # redis.expire(redis_key, 1800)
-                    # 存储 用户token值
-                    # token_key = ("userID:" + return_list["id"]).replace("'", "\"")
-                    # token_value = "\xAC\x05t\x00" + token
-                    # redis.set(token_key, token_value)
-                    # redis.expire(token_key, 1800)
+                    redis.expire(redis_key, 1800)
+                    token_value = token
+                    redis.set(token_key, token_value)
+                    redis.expire(token_key, 1800)
 
                     return jsonify({
                         "code": 1,
@@ -211,14 +216,15 @@ def signout():
     uid = g.token["id"]
     token_cn = json_data["token"]
     try:
-        conn = mysqlpool.get_conn()
-        with conn.swich_db(config.WOWRKSHEET01) as cursor:
-            redis.delete("userID:{}".format(uid))
-            redis.delete("userID:{}".format(token_cn))
+        # conn = mysqlpool.get_conn()
+        # with conn.swich_db(config.WOWRKSHEET01) as cursor:
+        redis.delete("userID:{}".format(uid))
+        redis.delete("userID:{}".format(token_cn))
 
     except Exception as e:
         raise e
-    return jsonify({
-        "code": 1,
-        "data": "退出成功"
-    })
+    finally:
+        return jsonify({
+            "code": 1,
+            "data": "退出成功"
+        })

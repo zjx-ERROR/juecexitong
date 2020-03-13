@@ -7,12 +7,13 @@ import sqlalchemy as sa
 from sqlalchemy.event import listen
 from sqlalchemy.orm import relationship, foreign, remote
 from sqlalchemy.sql import select, insert, update
-
+from sqlalchemy.dialects.mysql import BIT
 from celery import schedules
 from celery.utils.log import get_logger
 
 from .tzcrontab import TzAwareCrontab
 from .session import ModelBase
+import uuid
 
 logger = get_logger('celery_sqlalchemy_scheduler.models')
 
@@ -204,7 +205,7 @@ class PeriodicTask(ModelBase, ModelMixin):
     __tablename__ = 'celery_periodic_task'
     __table_args__ = {'sqlite_autoincrement': True}
 
-    id = sa.Column(sa.String(32), primary_key=True)
+    id = sa.Column(sa.String(32), primary_key=True, default=str(uuid.uuid4()).replace('-',''))
     # name
     name = sa.Column(sa.String(255))
     # task name
@@ -246,11 +247,11 @@ class PeriodicTask(ModelBase, ModelMixin):
     expires = sa.Column(sa.DateTime(timezone=True))
 
     # 只执行一次
-    one_off = sa.Column(sa.Boolean(), default=False)
+    one_off = sa.Column(BIT(1), default=False)
     # 开始时间
-    start_time = sa.Column(sa.DateTime(timezone=True))
+    start_time = sa.Column(sa.DateTime(timezone=True),default=dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     # 使能/禁能
-    enabled = sa.Column(sa.Boolean(), default=True)
+    enabled = sa.Column(BIT(1), default=True)
     # 最后运行时间
     last_run_at = sa.Column(sa.DateTime(timezone=True))
     # 总运行次数
@@ -261,6 +262,11 @@ class PeriodicTask(ModelBase, ModelMixin):
     # 说明
     description = sa.Column(sa.Text(), default='')
 
+    # 用户id
+    uid = sa.Column(sa.String(32), nullable=True)
+    
+    flag = sa.Column(BIT(1), default=True)
+    table_name = sa.Column(sa.String(64),nullable=True)
     no_changes = False
 
     def __repr__(self):

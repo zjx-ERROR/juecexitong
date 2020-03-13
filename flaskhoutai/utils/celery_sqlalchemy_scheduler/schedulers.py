@@ -21,6 +21,7 @@ from .models import (
     CrontabSchedule, IntervalSchedule,
     SolarSchedule,
 )
+import sys
 
 DEFAULT_MAX_INTERVAL = 5  # seconds
 
@@ -58,9 +59,11 @@ class ModelEntry(ScheduleEntry):
 
         try:
             self.schedule = model.schedule
+            print('schedule: {}'.format(self.schedule),file=sys.stdout)
             logger.debug('schedule: {}'.format(self.schedule))
         except Exception as e:
             logger.error(e)
+            print ('Disabling schedule %s that was removed from database'%self.name,file=sys.stdout)
             logger.error(
                 'Disabling schedule %s that was removed from database',
                 self.name,
@@ -71,6 +74,7 @@ class ModelEntry(ScheduleEntry):
             self.args = loads(model.args or '[]')
             self.kwargs = loads(model.kwargs or '{}')
         except ValueError as exc:
+            print('Removing schedule %s for argument deseralization error: %r'%(self.name, exc),file=sys.stdout)
             logger.exception(
                 'Removing schedule %s for argument deseralization error: %r',
                 self.name, exc,
@@ -127,14 +131,11 @@ class ModelEntry(ScheduleEntry):
             self.model.no_changes = False
             save_fields = ('enabled',)
             self.save(save_fields)
-
             return schedules.schedstate(False, None)
-
         return self.schedule.is_due(self.last_run_at)
 
     def _default_now(self):
         now = self.app.now()
-
         return now.replace(tzinfo=self.app.timezone)
 
     def __next__(self):
@@ -356,6 +357,7 @@ class DatabaseScheduler(Scheduler):
     def schedule(self):
         initial = update = False
         if self._initial_read:
+            
             logger.debug('DatabaseScheduler: initial read')
             initial = update = True
             self._initial_read = False
@@ -371,6 +373,7 @@ class DatabaseScheduler(Scheduler):
                 self._heap = []
                 self._heap_invalidated = True
             if logger.isEnabledFor(logging.DEBUG):
+                
                 logger.debug('Current schedule:\n%s', '\n'.join(
                     repr(entry) for entry in values(self._schedule)),
                 )

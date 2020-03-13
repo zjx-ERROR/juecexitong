@@ -11,6 +11,8 @@ from utils.dbutils import mysqlpool
 from flask import g
 from datetime import datetime
 from utils.token_utils import TokenMaker
+import demjson
+
 
 """
 连接mongodb数据库
@@ -257,6 +259,57 @@ def update_excel():
         })
 
 
+
+@operation_table.route("/update_status/", methods=["POST"])
+def update_status():
+    """修改表的状态保存到mysql"""
+    uid = g.token.get("id")
+    ident = TokenMaker().generate_token(uid, uid)
+    json_data = request.get_json()
+    table_id = {"table_id": json_data["id"]}
+    table_name = json_data["table_name"] + "_" + "cn"
+
+    contents = collection.find({"ident": ident})
+    for x in contents:
+        y = deepcopy(x)
+        json_data = request.get_json()
+        status_data = {"status": json_data["data"]}
+        table_id = {"table_id": int(json_data["id"])}
+        for each in y["data"]:
+            if each[-1] == table_id:
+                if list(each[-2].keys())[0] == "status":
+                    del each[-2]
+                    each.insert(-1, status_data)
+
+                collection.update(x, {"$set": y}, upsert=True)
+    conn = mysqlpool.get_conn()
+    with conn.swich_db("%s_db" % uid) as cursor:
+        conn.drop("drop table if EXISTS {}".format(table_name))
+        for i in json_data["data"]:
+            COLstr = ''  # 列的字段
+            ROWstr = ''  # 行字段
+            ColumnStyle = ' VARCHAR(255)'
+
+            for key in i.keys():
+                COLstr = COLstr + ' ' + key + ColumnStyle + ','
+                if key=="":
+                    continue
+                ROWstr = (ROWstr + '"%s"' + ',') % (i[key])
+
+            try:
+                conn.create("CREATE TABLE %s (%s)" % (table_name, COLstr[:-1]))
+                conn.show("INSERT INTO %s VALUES (%s)" % (table_name, ROWstr[:-1]))
+            except Exception as e:
+                conn.query_one("SELECT * FROM  %s" % table_name)
+                conn.show("INSERT INTO %s VALUES (%s)" % (table_name, ROWstr[:-1]))
+    return jsonify({
+        "code": 1,
+        "data": "修改成功"
+    })
+
+
+
+
 @operation_table.route("/get_status/", methods=["POST"])
 def get_status():
     """ 获取表原始状态"""
@@ -315,48 +368,6 @@ def get_status():
         })
 
 
-@operation_table.route("/update_status/", methods=["POST"])
-def update_status():
-    """修改表的状态保存到mysql"""
-    uid = g.token.get("id")
-    ident = TokenMaker().generate_token(uid, uid)
-    json_data = request.get_json()
-    table_id = {"table_id": json_data["id"]}
-    table_name = json_data["table_name"] + "_" + "cn"
-    contents = collection.find({"ident": ident})
-    for x in contents:
-        y = deepcopy(x)
-        json_data = request.get_json()
-        status_data = {"status": json_data["data"]}
-        table_id = {"table_id": int(json_data["id"])}
-        for each in y["data"]:
-            if each[-1] == table_id:
-                if list(each[-2].keys())[0] == "status":
-                    del each[-2]
-                    each.insert(-1, status_data)
-
-                collection.update(x, {"$set": y}, upsert=True)
-    conn = mysqlpool.get_conn()
-    with conn.swich_db("%s_db" % uid) as cursor:
-        conn.drop("drop table if EXISTS {}".format(table_name))
-        for i in json_data["data"]:
-            COLstr = ''  # 列的字段
-            ROWstr = ''  # 行字段
-            ColumnStyle = ' VARCHAR(255)'
-            for key in i.keys():
-                COLstr = COLstr + ' ' + key + ColumnStyle + ','
-                ROWstr = (ROWstr + '"%s"' + ',') % (i[key])
-            try:
-                conn.create("CREATE TABLE %s (%s)" % (table_name, COLstr[:-1]))
-                conn.show("INSERT INTO %s VALUES (%s)" % (table_name, ROWstr[:-1]))
-            except Exception as e:
-                conn.query_one("SELECT * FROM  %s" % table_name)
-                conn.show("INSERT INTO %s VALUES (%s)" % (table_name, ROWstr[:-1]))
-    return jsonify({
-        "code": 1,
-        "data": "修改成功"
-    })
-
 
 @operation_table.route("/get_excel_to_db/", methods=["POST", "GET"])
 def get_excel_to_db():
@@ -392,13 +403,21 @@ def get_excel_to_db():
                     COLstr = ''  # 列的字段
                     ROWstr = ''  # 行字段
                     ColumnStyle = ' VARCHAR(255)'
+                    biaoziduan = []
                     for key in j.keys():
                         nkey = key.replace(' ', '')
                         COLstr = COLstr + ' ' + nkey + ColumnStyle + ','
+                        biaoziduan.append(nkey)
                         ROWstr = (ROWstr + '"%s"' + ',') % (j[key])
                     if not conn.show('show tables like %s', table_name):
-                        conn.create("CREATE TABLE %s (%s)" % (table_name, COLstr[:-1]))
-                    conn.show("INSERT INTO %s VALUES (%s)" % (table_name, ROWstr[:-1]))
+                        # conn.create("CREATE TABLE %s (%s)" % (table_name, COLstr[:-1]))
+                        if "id" not in biaoziduan:
+                            conn.create("CREATE TABLE %s (%s)" % (table_name, "id VARCHAR(255), "+ COLstr[:-1]))
+                        else:
+                            conn.create("CREATE TABLE %s (%s)" % (table_name, COLstr[:-1]))
+                    # conn.show("INSERT INTO %s VALUES (%s)" % (table_name, ROWstr[:-1]))
+                    dataid = TokenMaker().generate_token(table_name, demjson.encode(ROWstr[:-1], encoding="utf-8"))
+                    conn.show('INSERT INTO %s VALUES (%s)' % (table_name, '"' + dataid + '",' + ROWstr[:-1]))
 
     return jsonify({
         "code": 1,
@@ -406,17 +425,18 @@ def get_excel_to_db():
     })
 
 
+
 @operation_table.route("/return_group_table/", methods=["POST", "GET"])
 def return_group_table():
     """返回分类列表和分类中包含的所有表"""
-    uid= g.token["id"]
+    uid = g.token["id"]
     try:
         conn = mysqlpool.get_conn()
-        with conn.swich_db("%s_db"%uid) as cursor:
-            table_list_ra = conn.query_all("select type_name from {}".format(config.ME2_TABLENAME1))
+        with conn.swich_db("%s_db" % uid) as cursor:
+            table_list_ra = conn.query_all("select groupid,type_name from {}".format(config.ME2_TABLENAME1))
             obj_list = conn.query_all(
-                "select wr.worksheet_name,wr.worksheet_name_cn,wc.type_name from {tableA} as wr left join {tableB} as wc on wr.groupid=wc.groupid".format(
-                    tableA= config.ME2_TABLENAME2, tableB=config.ME2_TABLENAME1))
+                "select wr.id,wr.worksheet_name,wr.worksheet_name_cn,wc.type_name,wc.groupid,wr.origin_type_id from {tableA} as wr left join {tableB} as wc on wr.groupid=wc.groupid".format(
+                    tableA=config.ME2_TABLENAME2, tableB=config.ME2_TABLENAME1))
             table_list = []
             for i in table_list_ra:
                 list_data = []
@@ -433,12 +453,13 @@ def return_group_table():
                 data = [i, {"table_name": list_data}]
                 table_list.append(data)
     except Exception as e:
-        raise  e
+        raise e
     else:
         return jsonify({
             "code": 1,
             "data": table_list
         })
+
 
 
 @operation_table.route("/return_excel_field/", methods=["POST", "GET"])
@@ -736,3 +757,27 @@ def return_two_field_contents():
             "code": -1,
             "msg": "操作失败"
         })
+
+
+# 通过id tablename 查找表中某一行数据
+@operation_table.route("/idtabledata/", methods=["POST"])
+def idtabledata():
+    try:
+        jsondata = request.get_json()
+        uid= jsondata["uid"]
+        fieldvalue= jsondata["fieldvalue"]
+        tablename= jsondata["tablename"]
+        fieldname = jsondata["fieldname"]
+
+        conn = mysqlpool.get_conn()
+        with conn.swich_db("%s_db"%uid) as cursor:
+            returndata= conn.query_one("select * from `{}` where {} =%s".format(tablename,fieldname),[fieldvalue])
+            # returndata= conn.query_one("select * from `{}` where id ={}".format(tablename, id))
+            del returndata[fieldname]
+        return jsonify({
+            "code": 1,
+            "data": returndata
+        })
+
+    except Exception as e:
+        raise e

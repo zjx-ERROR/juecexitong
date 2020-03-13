@@ -217,22 +217,21 @@ def save_analysis_model():
     json_data = request.get_json()
     algorithm_id = json_data.get('algorithmId')
     # model_name = json_data.get('modelName')#  mainTitle
-    model_name = json_data.get('mainTitle')
+    model_name = json_data.get('modelName')
     theme = json_data.get('theme')
     purpose_column = json_data.get('purposeColumn')#
     # drag_data = json_data.get('dragData')# thumbnail
-    # source = json_data.get('source')#
-    drag_data = json_data.get('jsonstr')
-    source = uid + "_db"+"_"+ json_data["mTable"]
+    # source = json_data.get('source')#mTable
+    drag_data = json_data.get('dragData')
+    source = uid + "_db"+"_"+ json_data["source"]
     create_date = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     conn = mysqlpool.get_conn()
     the_uuid = str(uuid.uuid4())
     try:
         with conn.swich_db(config.WOWRKSHEET01) as cursor:
-           
             res = conn.insert_one('insert into {TABLE} values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'.format(TABLE=config.TABLENAME42),
-                [the_uuid, uid, algorithm_id, model_name, theme, purpose_column, drag_data, source, create_date, create_date, 1])
-        
+                [the_uuid, uid, algorithm_id, model_name, theme, purpose_column, json.dumps(drag_data), source, create_date, create_date, 1])
+
             return jsonify({"code": 1, "data": the_uuid})
     except Exception as e:
         raise e
@@ -273,18 +272,27 @@ def build_algorithm():
     model_id = str(uuid.uuid1())
     uid = g.token.get("id")
 
-    cl = table_and_field[targetdb]
-    cl.remove(takgetfield)
-    table_and_field[targetdb] = cl
+    # cl = table_and_field[targetdb]
+    # cl.remove(takgetfield)
+    # table_and_field[targetdb] = cl
 
     data = {}
     conn = mysqlpool.get_conn()
     with conn.swich_db("%s_db" % uid, cursor=pymysql.cursors.Cursor) as cursor:
         for k, v in table_and_field.items():
-            res1 = conn.query_all("select {FIELD} from {TABLE}".format(FIELD=",".join(v), TABLE=k))
+            cn_names = ""
+            for i in v:
+                cn_names += "\"%s\","%i
+            cn_names = cn_names[:-1]
+            all_fields = conn.query_all('select prime_name from {TABLE}_cn where cn_name in ({CN_NAMES}) order by field(cn_name,{CN_NAMES})'.format(TABLE=k,CN_NAMES=cn_names))
+
+            all_fields = [fi[0] for fi in all_fields]
+            takgetf = all_fields.pop(v.index(takgetfield))
+            v.remove(takgetfield)
+            res1 = conn.query_all("select {FIELD} from {TABLE}".format(FIELD=",".join(all_fields), TABLE=k))
             for i, j in enumerate(v):
                 data[j] = [k[i] for k in res1]
-        res2 = conn.query_all("select {FIELD} from {TABLE}".format(FIELD=takgetfield, TABLE=targetdb))
+        res2 = conn.query_all("select {FIELD} from {TABLE}".format(FIELD=takgetf, TABLE=targetdb))
 
         data[takgetfield] = [k[0] for k in res2]
 

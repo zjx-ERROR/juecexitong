@@ -5,6 +5,7 @@ import pymysql
 import time, datetime
 import base64
 import random, string
+import uuid
 
 # 创建可视化应用 的蓝图
 visualization_application = Blueprint("visualization_application", __name__)
@@ -309,7 +310,7 @@ def quotaslist():
 # http://120.31.140.112:8080/componentManagement//quota/saveQuotaOverviewEntity 增加保存指标类型数据
 @visualization_application.route("/saveQuotaOverviewEntity/", methods=["POST"])
 def saveQuotaOverviewEntity():
-    """ 增加保存指标类型数据"""
+    """ 增加/修改 保存指标类型数据"""
     json_data = request.get_json()
     uid = g.token["id"]
     categoryId = json_data["categoryId"]
@@ -320,13 +321,14 @@ def saveQuotaOverviewEntity():
     name5 = json_data["name5"]
     token = json_data["token"]
     # 随机产生id
-    def randomid(num):
-        lower_num = string.ascii_lowercase + string.digits
-        randomstr = ""
-        for i in range(num):
-            randomstr += random.choice(lower_num)
-        return randomstr
-    id = randomid(8) + token[8:24] + randomid(12)
+
+    # def randomid(num):
+    #     lower_num = string.ascii_lowercase + string.digits
+    #     randomstr = ""
+    #     for i in range(num):
+    #         randomstr += random.choice(lower_num)
+    #     return randomstr
+    # id = randomid(8) + token[8:24] + randomid(12)
     # 保存图片信息
     thumbnail = json_data["thumbnail"].split(",")[-1]
     imgdata = base64.b64decode(thumbnail)
@@ -355,14 +357,26 @@ def saveQuotaOverviewEntity():
             # 初始化赋值
             editDate = createDate
             flag = 1
-            conn.insert_one(
-                "insert into {} (id,uid,thumbnail,categoryId,title,name1,value1,unit1,name2,value2,unit2,name3,value3,unit3,name4,value4,unit4,name5,value5,unit5,createDate,editDate,flag) values (%s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s)".format(
-                    config.TABLENAME11),
-                [id, uid, path, categoryId, title, name1, value1, unit1, name2, value2, unit2, name3, value3, unit3, name4,
-                 value4, unit4, name5, value5, unit5, createDate, editDate, flag])
+            # conn.update("update {} set userid=%s,bigscreenName=%s,layoutGrid=%s, layoutJson=%s,bigscreenPath=%s,bigscreenGroup=%s,createDate=%s where id=%s and userid=%s and flag=%s".format(
+            #                     config.TABLENAME35),(userid,bigscreenName,layoutGrid,layoutJson,path,bigscreenGroup,createDate,id,userid,flag))
+            if "id" in dict(json_data).keys():
+                sid = json_data["id"]
+                conn.update(
+                    "update {} set thumbnail=%s, categoryId=%s,title=%s,name1=%s,value1=%s,unit1=%s,name2=%s,value2=%s,unit2=%s,name3=%s,value3=%s,unit3=%s,name4=%s,value4=%s,unit4=%s,name5=%s,value5=%s,unit5=%s,createDate=%s,editDate=%s,flag=%s where id=%s".format(
+                        config.TABLENAME11),
+                    [path, categoryId, title, name1, value1, unit1, name2, value2, unit2, name3, value3, unit3, name4,
+                     value4, unit4, name5, value5, unit5, createDate, editDate, flag,sid])
+            else:
+                sid = str(uuid.uuid4())
+                conn.insert_one(
+                    "insert into {} (id,uid,thumbnail,categoryId,title,name1,value1,unit1,name2,value2,unit2,name3,value3,unit3,name4,value4,unit4,name5,value5,unit5,createDate,editDate,flag) values (%s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s,%s,%s, %s,%s,%s)".format(
+                        config.TABLENAME11),
+                    [sid, uid, path, categoryId, title, name1, value1, unit1, name2, value2, unit2, name3, value3, unit3,
+                     name4,
+                     value4, unit4, name5, value5, unit5, createDate, editDate, flag])
         return jsonify({
             "code": 1,
-            "msg": id
+            "msg": sid
         })
     except Exception as e:
         raise e

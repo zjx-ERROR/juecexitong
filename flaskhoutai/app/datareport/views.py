@@ -40,6 +40,7 @@ def reportlistAll():
                   i["styleObj"] = func(i["styleObj"])
                   i["thumbnail"] = func(i["thumbnail"])
                   i["reportType"]= func(i["reportType"])
+                  # i["base64Data"] = func(i["base64Data"])
                   return_list.append(i)
             else:
                 return_list=[]
@@ -298,24 +299,32 @@ def savecomponentTemplateInReport():
 
     except Exception as e:
         raise e
-
 # http://120.31.140.112:8080/componentManagement//reportDB/updateThumbnail   保存编辑报表截图
 @data_report.route("/updateReportThumbnail/", methods=["POST"])
 def updateReportThumbnail():
     """ 保存编辑报表截图"""
     json_data = request.get_json()
     reportDBId = json_data["id"]
-
-    # 保存图片信息
-    thumbnail = json_data["thumbnail"].split(",")[-1]
-    imgdata = base64.b64decode(thumbnail)
     now_time = datetime.datetime.now()
     time01 = now_time.strftime("%Y%m%d%H%M%S")
+
+    # 保存页面网页端图片信息
+    thumbnail = json_data["thumbnail"].split(",")[-1]
+    imgdata = base64.b64decode(thumbnail)
     path01 = config.DATAREPORT01 + time01 + ".jpg"
     path = config.DATAREPORTPATH + time01 + ".jpg"
     file = open(path01, "wb")
     file.write(imgdata)
     file.close()
+
+    # 保存页面手机端图片url
+    # shoujiyemian = json_data["base64Data"].split(",")[-1]
+    # base64imgdata = base64.b64decode(shoujiyemian)
+    # path02 = config.DATAREPORT02 + time01 + ".jpg"
+    # base64Data = config.DATAREPORTPATH02 + time01 + ".jpg"
+    # file02 = open(path02, "wb")
+    # file02.write(base64imgdata)
+    # file02.close()
 
     try:
       conn= mysqlpool.get_conn()
@@ -383,12 +392,45 @@ def updateReportStyle():
     except Exception as e:
         raise e
 
+#
+# # http://120.31.140.112:8080/componentManagement/pushReport/getAllReportByUidAndType  获取用户报表信息
+# @data_report.route("/getAllReportByUidAndType/", methods=["POST"])
+# def getAllReportByUidAndType():
+#     """获取用户报表信息"""
+#     json_data = request.get_json()
+#     reportType= json_data["type"]
+#     uid= g.token["id"]
+#     flag= 1
+#     try:
+#       conn= mysqlpool.get_conn()
+#       with conn.swich_db(config.WOWRKSHEET01) as cursor:
+#         if conn.query_all("select * from {} where uid=%s and flag=%s and reportType=%s ".format(config.TABLENAME9),[uid, flag, reportType]):
+#             reportmsglist= conn.query_all("select * from {} where uid=%s and flag=%s and reportType=%s".format(config.TABLENAME9),[uid, flag,reportType])
+#             return_data=[]
+#             for i in reportmsglist:
+#                 reportmsgdic={}
+#                 reportmsgdic["createDate"]=i["createDate"].strftime("%Y-%m-%d %H:%M:%S")
+#                 reportmsgdic["id"]= i["id"]
+#                 reportmsgdic["name"]= i["name"]
+#                 return_data.append(reportmsgdic)
+#             return jsonify({
+#               "code": 1,
+#               "data": return_data
+#           })
+#         else:
+#             return jsonify({
+#                 "code": -1,
+#                 "data": "获取参数列表失败"
+#             })
+#
+#
+#     except Exception as e:
+#         raise e
 
 # http://120.31.140.112:8080/componentManagement/pushReport/getAllReportByUidAndType  获取用户报表信息
 @data_report.route("/getAllReportByUidAndType/", methods=["POST"])
 def getAllReportByUidAndType():
     """获取用户报表信息"""
-    """前端用户参数type(报表类型参数没用到)"""
     json_data = request.get_json()
     reportType= json_data["type"]
     uid= g.token["id"]
@@ -396,24 +438,48 @@ def getAllReportByUidAndType():
     try:
       conn= mysqlpool.get_conn()
       with conn.swich_db(config.WOWRKSHEET01) as cursor:
-        if conn.query_all("select * from {} where uid=%s and flag=%s".format(config.TABLENAME9),[uid, flag]):
-            reportmsglist= conn.query_all("select * from {} where uid=%s and flag=%s".format(config.TABLENAME9),[uid, flag])
-            return_data=[]
-            for i in reportmsglist:
-                reportmsgdic={}
-                reportmsgdic["createDate"]=i["createDate"].strftime("%Y-%m-%d %H:%M:%S")
-                reportmsgdic["id"]= i["id"]
-                reportmsgdic["name"]= i["name"]
-                return_data.append(reportmsgdic)
-            return jsonify({
-              "code": 1,
-              "data": return_data
-          })
-        else:
-            return jsonify({
-                "code": -1,
-                "data": "获取参数列表失败"
-            })
+          if reportType=="1":
+              if conn.query_all(
+                      "select * from {} where uid=%s and flag=%s and reportType=%s ".format(config.TABLENAME9),
+                      [uid, flag, reportType]):
+                  reportmsglist = conn.query_all(
+                      "select * from {} where uid=%s and flag=%s and reportType=%s".format(config.TABLENAME9),
+                      [uid, flag, reportType])
+                  return_data = []
+                  for i in reportmsglist:
+                      reportmsgdic = {}
+                      reportmsgdic["createDate"] = i["createDate"].strftime("%Y-%m-%d %H:%M:%S")
+                      reportmsgdic["id"] = i["id"]
+                      reportmsgdic["name"] = i["name"]
+                      return_data.append(reportmsgdic)
+                  return jsonify({
+                      "code": 1,
+                      "data": return_data
+                  })
+          elif reportType=="4":
+
+              if conn.query_all(
+                      "select * from {} where uid=%s and flag=%s  ".format(config.TABLENAME27),
+                      [uid, flag]):
+                  reportmsglist = conn.query_all(
+                      "select * from {} where uid=%s and flag=%s ".format(config.TABLENAME27),
+                      [uid, flag])
+                  return_data = []
+                  for i in reportmsglist:
+                      reportmsgdic = {}
+                      reportmsgdic["createDate"] = i["createDate"].strftime("%Y-%m-%d %H:%M:%S")
+                      reportmsgdic["id"] = i["id"]
+                      reportmsgdic["name"] = i["name"]
+                      return_data.append(reportmsgdic)
+                  return jsonify({
+                      "code": 1,
+                      "data": return_data
+                  })
+          else:
+              return jsonify({
+                  "code": -1,
+                  "data": "获取参数列表失败"
+              })
 
 
     except Exception as e:
@@ -430,7 +496,7 @@ def getMailboxreport():
     try:
       conn= mysqlpool.get_conn()
       with conn.swich_db(config.WOWRKSHEET01) as cursor:
-          if conn.query_one("select createDate,editDate,flag,id,name,styleId,thumbnail,uid from {} where id=%s".format(config.TABLENAME9),[reportid]):
+          if conn.query_one("select createDate,editDate,flag,id,name,styleId,thumbnail,uid  from {} where id=%s".format(config.TABLENAME9),[reportid]):
               reportmsg= conn.query_one("select createDate,editDate,flag,id,name,styleId,thumbnail,uid from {} where id=%s".format(config.TABLENAME9),[reportid])
               reportmsg["createDate"]= int(time.mktime(reportmsg["createDate"].timetuple()))
               reportmsg["editDate"] = int(time.mktime(reportmsg["editDate"].timetuple()))
@@ -670,9 +736,9 @@ def saveAnalysisReport():
                         if conn.query_one("select * from {} where analysis_report_part_id=%s and flag=%s".format(config.TABLENAME31),[part_id["id"],1])==0:
                             analysis_report_part_descriptions_id= part_id["id"][:-12] + randomid(12)
                             conn.insert_one("insert into {} (id,analysis_report_part_id,descriptions,sortid,flag) values (%s,%s,%s,%s,%s)".format(
-                                config.TABLENAME31),[analysis_report_part_descriptions_id, part_id["id"], i["descriptions"],sortid,1])
+                                config.TABLENAME31),[analysis_report_part_descriptions_id, part_id["id"], str(i["descriptions"]),sortid,1])
                         else:
-                            conn.update("update {} set descriptions=%s where analysis_report_part_id=%s and flag=%s".format(config.TABLENAME31),[i["descriptions"],part_id["id"],1])
+                            conn.update("update {} set descriptions=%s where analysis_report_part_id=%s and flag=%s".format(config.TABLENAME31),[str(i["descriptions"]),part_id["id"],1])
                 return jsonify({
                     "code": 1,
                     "data": front_id
@@ -926,5 +992,76 @@ def updateGroup_reportid():
                 "code": 1,
                 "data": "修改数据报表成功"
             })
+    except Exception as e:
+        raise e
+
+# http://120.31.140.112:8080/componentManagement//mobile/queryQuota
+@data_report.route("/queryQuota/", methods=["POST"])
+def queryQuota():
+    json_data = request.get_json()
+    id = json_data["id"]
+    try:
+        conn = mysqlpool.get_conn()
+        with conn.swich_db(config.WOWRKSHEET01) as cursor:
+            returnlist=[]
+            returndata=conn.query_all("select * from {} where reportDBId =%s and flag=1 order by sortId ".format(config.TABLENAME10),[id])
+            for i in returndata:
+                relist=conn.query_one("select * from {} where id=%s".format(config.TABLENAME11),[i["entityId"]])
+                returnlist.append(relist)
+            return jsonify({
+                "code": 1,
+                "data": returnlist
+            })
+    except Exception as e:
+        raise e
+
+
+# http://120.31.140.112:8080/componentManagement//mobile/queryChart
+@data_report.route("/queryChart/", methods=["POST"])
+def queryChart():
+    """通过报表id获取表报下的业务组件内容"""
+    json_data = request.get_json()
+    reportDBId = json_data["id"]
+    try:
+        conn = mysqlpool.get_conn()
+        with conn.swich_db(config.WOWRKSHEET01) as cursor:
+            if conn.query_all(
+                    "select componentId,size from {} where reportDBId=%s and flag=%s".format(config.TABLENAME5),
+                    [reportDBId, 1]):
+                componentIdlist = conn.query_all(
+                    "select componentId,size from {} where reportDBId=%s and flag=%s order by sortId".format(
+                        config.TABLENAME5), [reportDBId, 1])
+                if len(componentIdlist) == 0:
+                    return jsonify({
+                        "code": 1,
+                        "msg": "获取的数据为空值！"
+                    })
+                else:
+                    return_data = []
+
+                    for i in componentIdlist:
+                        componentmsg = {}
+                        componentmsg["id"] = i["componentId"]
+                        if conn.query_one("select jsonstr from {} where id=%s".format(config.TABLENAME3),
+                                          [i["componentId"]])["jsonstr"]:
+                            comlist = conn.query_one("select jsonstr,mSchema from {} where id=%s".format(config.TABLENAME3),
+                                           [i["componentId"]])
+                            componentmsg["jsonstr"] = str(comlist["jsonstr"])
+                            componentmsg["mSchema"] = comlist["mSchema"]
+                        else:
+                            componentmsg["jsonstr"] = ""
+                            componentmsg["mSchema"] = ""
+
+                        # componentmsg["jsonstr"] = conn.query_one("select jsonstr,mSchema from {} where id=%s".format(config.TABLENAME3), [i["componentId"]])["jsonstr"]
+                        return_data.append(componentmsg)
+                    return jsonify({
+                        "code": 1,
+                        "msg": return_data
+                    })
+            else:
+                return jsonify({
+                    "code": 1,
+                    "msg": []
+                })
     except Exception as e:
         raise e

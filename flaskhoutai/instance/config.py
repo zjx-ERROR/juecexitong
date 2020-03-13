@@ -70,8 +70,12 @@ TABLENAME45 = "algorithmic_assessment"
 TABLENAME46 = "crawler_list"
 TABLENAME47 = "user_database"
 TABLENAME48 = "url2_share"
-
-
+TABLENAME49 = "crawler"
+TABLENAME50 = "celery_periodic_task"
+TABLENAME51 = "celery_interval_schedule"
+TABLENAME52 = "report_push_email"
+TABLENAME53 = "celery_crontab_schedule"
+TABLENAME54 = "dbcrawler"
 """表名"""
 ME2_TABLENAME1 = 'worksheet_classification'
 ME2_TABLENAME2 = 'worksheet_relation'
@@ -118,36 +122,83 @@ DB_POOL_MAX_CONN = 8
 
 
 # 跳过token验证
-tokenpath=["/layout/shareurl/", "/layout/is_identifying/","/databigscreen/shareurl/"]
+tokenpath=["/layout/shareurl/", "/layout/is_identifying/","/databigscreen/shareurl/","/operation_worksheet/return_component_con/"]
 # 基础角色id
 roleid="bc9359dc-1d1d-11e7-a8b1-ce19120e1336"
 
 # celery
 from kombu import Exchange
 from kombu import Queue
-
-BROKER_URL = 'redis://:{ps}@{host}:{port}/3'.format(ps=REDIS_PASSWORD,host=REDIS_HOST,port=REDIS_PORT)
-CELERY_RESULT_BACKEND = 'redis://:{ps}@{host}:{port}/4'.format(ps=REDIS_PASSWORD,host=REDIS_HOST,port=REDIS_PORT)
-CELERY_INCLUDE = ['tasks.tasks_general']
-CELERY_TIMEZONE = 'Asia/Shanghai'
-CELERY_QUEUES = (
-    Queue("tasks_general", Exchange("tasks_general"), routing_key="tasks_general"),
-)
-
-CELERY_ROUTES = {
-    'tasks.tasks_general.*': {"queue": "tasks_general", 'exchange':"tasks_general","routing_key": "tasks_general"},
-}
-CELERYD_MAX_TASKS_PER_CHILD = 10
-CELERYBEAT_MAX_LOOP_INTERVAL = 10
-CELERYBEAT_SYNC_EVERY = 0
-CELERY_TRACE_APP = 1 # 生产环境关闭
-CELERY_ENABLE_UTC = False
-
 BEAT_DB = 'test'
+DB_ADMIN = 'component_management'
+
+# BROKER_URL = 'redis://:{ps}@{host}:{port}/3'.format(ps=REDIS_PASSWORD,host=REDIS_HOST,port=REDIS_PORT)
+# CELERY_RESULT_BACKEND = 'redis://:{ps}@{host}:{port}/4'.format(ps=REDIS_PASSWORD,host=REDIS_HOST,port=REDIS_PORT)
+# CELERY_INCLUDE = ['tasks.tasks_general']
+# CELERY_TIMEZONE = 'Asia/Shanghai'
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_RESULT_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_TRACK_STARTED = True
+# CELERY_DISABLE_RATE_LIMITS = True
+# CELERY_RESULT_EXPIRES = 1800
+# CELERY_WORKER_SEND_TASK_EVENTS = "enabled"
+# CELERY_TASK_SEND_SENT_EVENT = "enable"
+# CELERY_REDIRECT_STDOUTS_LEVEL = 'INFO'
+# # CELERY_QUEUES = (
+# #     Queue("tasks_general", Exchange("tasks_general"), routing_key="tasks_general"),
+# # )
+
+# # CELERY_ROUTES = {
+# #     'tasks.tasks_general.*': {"queue": "tasks_general", 'exchange':"tasks_general","routing_key": "tasks_general"},
+# # }
+# CELERYD_MAX_TASKS_PER_CHILD = 100
+# CELERYBEAT_MAX_LOOP_INTERVAL = 10
+# CELERYBEAT_SYNC_EVERY = 0
+# CELERY_TRACE_APP = 0 # 生产环境关闭
+# CELERY_ENABLE_UTC = True
+
+
+
+# beat_dburi = "mysql+pymysql://{ROOT}:{PASS}@{HOST}:{PORT}/{TABLE}".format(ROOT=DB_USER, PASS=DB_PASS,
+#                                                                                        HOST=DB_HOST, PORT=DB_PORT,
+#                                                                                        TABLE=BEAT_DB)
+
+
+broker_url = 'redis://:{ps}@{host}:{port}/3'.format(ps=REDIS_PASSWORD,host=REDIS_HOST,port=REDIS_PORT)
+result_backend = 'redis://:{ps}@{host}:{port}/4'.format(ps=REDIS_PASSWORD,host=REDIS_HOST,port=REDIS_PORT)
+include = ['tasks.tasks_general']
+timezone = 'Asia/Shanghai'
+task_serializer = 'json'
+result_serializer = 'json'
+accept_content = ['json']
+result_accept_content = ['json']
+# result_expires = 1800
+worker_send_task_events = "enabled"
+task_send_sent_event = "enable"
+worker_redirect_stdouts_level = 'INFO'
+worker_max_tasks_per_child = 100
+enable_utc = False
+task_ignore_result = True
+task_store_errors_even_if_ignore = True
 beat_dburi = "mysql+pymysql://{ROOT}:{PASS}@{HOST}:{PORT}/{TABLE}".format(ROOT=DB_USER, PASS=DB_PASS,
                                                                                        HOST=DB_HOST, PORT=DB_PORT,
                                                                                        TABLE=BEAT_DB)
 
+
+BABEL_DEFAULT_LOCALE = "zh_CN"
+
+SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{ROOT}:{PASS}@{HOST}:{PORT}/{TABLE}".format(ROOT=DB_USER, PASS=DB_PASS,
+                                                                                       HOST=DB_HOST, PORT=DB_PORT,
+                                                                                       TABLE=DB_ADMIN)
+SQLALCHEMY_ECHO = True
+SQLALCHEMY_POOL_SIZE = 100
+SQLALCHEMY_POOL_RECYCLE = 25200
+SQLALCHEMY_TRACK_MODIFICATIONS = False
+SQLALCHEMY_MAX_OVERFLOW = 20
+SQLALCHEMY_MAX_OVERFLOW = 20
+SQLALCHEMY_POOL_SIZE = 40
 # 算法代码地址
 ALGORITHM_PATH = r'/usr/local/algorithm/algolib'
 EVALUATE_PATH = r'/usr/local/algorithm/evaluate'
@@ -163,6 +214,8 @@ SNAPSHOTROUTE = '/componentManagement/upload/imgFlow'
 DATABATESCREEN = "/usr/local/bigscreen/componentManagement/upload/bigscreen/bigscreen_"
 DATABIGPATH= "/upload/bigscreen/bigscreen_"
 DATAREPORT01= "/usr/local/bigscreen/componentManagement/upload/reportDB/reportDB_"
+DATAREPORT02= "/usr/local/bigscreen/componentManagement/upload/reportDB/shoujiduan_"
+DATAREPORTPATH02 = "/upload/reportDB/shoujiduan_"
 DATAREPORTPATH = "/upload/reportDB/reportDB_"
 ANALYSISREPORT01= "/usr/local/bigscreen/componentManagement/upload/analysisReport/analysisReport_"
 ANALYSISREPORTPATH = "/upload/analysisReport/analysisReport_"
@@ -174,7 +227,13 @@ QUOTAOPATH= "/upload/quota/quota_"
 SERVERCHART01= "/usr/local/bigscreen/componentManagement/upload/chart/chart_"
 SERVERCHARTPATH= "/upload/chart/chart_"
 
-
-
 # 我的信箱 下载接口
 IMGROUTE_SERVER= 'http://120.31.140.112:8091/componentManagement/'
+
+# email
+EMAIL_SENDER = 'jcxtSender'
+
+IMG_SERVER_HOST = 'http://127.0.0.1:'
+IMG_SERVER_PORT = '80'
+IMG_SERVER_URL = '/#/phoneSize/'
+CHROME_DIR = '/home/myadmin.fs/flaskhoutai/chromedriver'

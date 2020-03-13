@@ -6,12 +6,13 @@ from instance import config
 import gevent
 from gevent import queue
 from contextlib import contextmanager
-
+from flask_sqlalchemy import SQLAlchemy
 
 # Redis实例
 # redis_conn = redis.Redis(host=config.REDIS_HOST,port=config.REDIS_PORT,db=config.REDIS_DB,decode_responses=config.REDIS_DECODE_RESPONSES,encoding_errors=config.REDIS_ENCODING_ERRORS,socket_connect_timeout=config.REDIS_SOCKET_CONNECT_TIME)
 redis = Redis()
-
+db = SQLAlchemy()
+db_session = db.session
 
 def makeDictFactory(cursor):
     columnNames = [d[0] for d in cursor.description]
