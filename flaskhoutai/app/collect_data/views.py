@@ -297,10 +297,14 @@ def return_table_msg():
         cur = db.cursor(cursor=pymysql.cursors.DictCursor)
         cur.execute("select count(*) from %s" % table_name)
         cfo = cur.fetchone()
-        
+
         if customize_sql:
+            customize_sql_list = customize_sql.lower().split(' ')
+            customize_db_list = [customize_sql_list[i+1].isalnum() for i,j in enumerate(customize_sql_list) if j == "from"]
             if customize_sql.lower().startswith("select"):
                 sql = customize_sql
+            elif not any(customize_db_list):
+                return jsonify({"code": -1, "data": "请勾选所查询的库表"})
             else:
                 return jsonify({"code": -1, "data": "查询失败"})
         else:
@@ -435,14 +439,13 @@ def save_table():
                 return jsonify({"code": -1, "data": "插入数据失败"})
             try:
                 dbmsg = demjson.decode(redis.get("%s:%s"%(token,table_name)),encoding="utf-8")
-
                 columns = [list(i.keys()) for i in dbmsg][0]
                 baifens = '%s,'
                 field_sentence = ""
                 for j in range(len(columns)):
-                    field_sentence += "`%s` varchar(255),"%columns[j] 
+                    field_sentence += "`%s` varchar(255),"%columns[j]
                     baifens += '%s,'
-                create_table_msg = "CREATE TABLE `%s` (`worksheet_id` varchar(32) NOT NULL,"%tb_name + field_sentence + "UNIQUE KEY `worksheet_id` (`worksheet_id`) USING BTREE) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC"
+                create_table_msg = "CREATE TABLE `%s` (id int primary key auto_increment,`worksheet_id` varchar(32) NOT NULL,"%tb_name + field_sentence + "UNIQUE KEY `worksheet_id` (`worksheet_id`) USING BTREE) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC"
                 conn.create(create_table_msg)
                     
                 insert_sentence = 'insert into `%s` (%s)'%(tb_name,"worksheet_id,%s"%','.join(["`%s`"%c for c in columns])) + ' values(' + baifens[:-1] + ')'
@@ -467,7 +470,7 @@ def save_table():
                 if not schedule:
                     schedule = IntervalSchedule(every=every_value, period=getattr(IntervalSchedule,update_frequency))
                     beat_session.add(schedule)
-                task = PeriodicTask(id=task_id,uid=uid,interval=schedule,name='dbcrawl_task_%s'%task_id,task='tasks.tasks_general.dbcrawl',args=json.dumps([tb_name,cash_msg["table_name"],cash_msg["sourceid"],uid,cash_msg.get('customize_sql')]),last_run_at=datetimenow,description=remark,table_name=tb_name)
+                task = PeriodicTask(id=task_id,uid=uid,interval=schedule,name='dbcrawl_task_%s'%task_id,task='tasks.tasks_general.dbcrawl',args=json.dumps([tb_name,cash_msg["table_name"],cash_msg["sourceid"],uid,update_type,cash_msg.get('customize_sql')]),last_run_at=datetimenow,description=remark,table_name=tb_name)
                 beat_session.add(task)
                 beat_session.commit()
         elif crontab == 1:
@@ -481,7 +484,7 @@ def save_table():
                 if not schedule:
                     schedule = CrontabSchedule(minute=crontab_minute,hour=crontab_hour,timezone=config.TIMEZONE)
                     beat_session.add(schedule)
-                task = PeriodicTask(id=task_id,uid=uid,crontab=schedule,name='dbcrawl_task_%s'%task_id,task='tasks.tasks_general.dbcrawl',args=json.dumps([tb_name,cash_msg["table_name"],cash_msg["sourceid"],uid,cash_msg.get('customize_sql')]),last_run_at=datetimenow,description=remark,table_name=tb_name)
+                task = PeriodicTask(id=task_id,uid=uid,crontab=schedule,name='dbcrawl_task_%s'%task_id,task='tasks.tasks_general.dbcrawl',args=json.dumps([tb_name,cash_msg["table_name"],cash_msg["sourceid"],uid,update_type,cash_msg.get('customize_sql')]),last_run_at=datetimenow,description=remark,table_name=tb_name)
                 beat_session.add(task)
                 beat_session.commit()
     except Exception as e:
@@ -502,11 +505,13 @@ def worksheet_entity():
     with conn.swich_db("%s_db"%uid) as cursor:
         try:
             worksheet_entity = conn.query_all("select * from `%s`" % worksheet_name)
+        except Exception as e:
+            return jsonify({"code": -1, "data": "操作失败"})
+        try:
             for i in worksheet_entity:
                 i["dataid"]=worksheet_entity.index(i)
-        except Exception as e:
-            raise e
-            return jsonify({"code": -1, "data": "操作失败"})
+        except:
+            pass
         try:
             predata = conn.query_one(
                 "select worksheet_name_cn from {} where worksheet_name = %s".format(config.ME2_TABLENAME2),
@@ -529,12 +534,17 @@ def worksheet_entity():
     with conn.swich_db(config.WOWRKSHEET01) as cursor:
     # 任务id
         try:
+
             task_msg = conn.query_one("select a.id,a.last_run_at,a.total_run_count,a.description,c.every,c.period from {TABLE2} a,{TABLE1} b,{TABLE3} c where b.uid=%s and b.tableName=%s and a.id=b.id and a.interval_id=c.id".format(TABLE1=config.TABLENAME49,TABLE2=config.TABLENAME50,TABLE3=config.TABLENAME51),[uid,worksheet_name])
             crontab = 0
             if not task_msg:
+                task_msg = conn.query_one("select a.id,a.last_run_at,a.total_run_count,a.description,c.every,c.period from {TABLE2} a,{TABLE1} b,{TABLE3} c where b.uid=%s and b.table_name=%s and a.id=b.id and a.interval_id=c.id".format(TABLE1=config.TABLENAME54,TABLE2=config.TABLENAME50,TABLE3=config.TABLENAME51),[uid,worksheet_name])
+            if not task_msg:
                 task_msg = conn.query_one("select a.id,a.last_run_at,a.total_run_count,a.description,c.minute,c.hour from {TABLE2} a,{TABLE1} b,{TABLE3} c where b.uid=%s and b.tableName=%s and a.id=b.id and a.crontab_id=c.id".format(TABLE1=config.TABLENAME49,TABLE2=config.TABLENAME50,TABLE3=config.TABLENAME53),[uid,worksheet_name])
                 crontab = 1
-            elif not task_msg:
+            if not task_msg:
+                task_msg = conn.query_one("select a.id,a.last_run_at,a.total_run_count,a.description,c.minute,c.hour from {TABLE2} a,{TABLE1} b,{TABLE3} c where b.uid=%s and b.table_name=%s and a.id=b.id and a.crontab_id=c.id".format(TABLE1=config.TABLENAME54,TABLE2=config.TABLENAME50,TABLE3=config.TABLENAME53),[uid,worksheet_name])
+            if not task_msg:
                 task_msg = None
                 crontab = None
         except:
@@ -542,7 +552,6 @@ def worksheet_entity():
     return Response(json.dumps(
         {"code": 1, "data": worksheet_entity, 'worksheet_name_cn': sheet_cn, 'field_status': field_status,
          'field_type': field_type,"task_msg": task_msg},cls=DateEncoder))
-
 
 @collect_data.route("/drop_worksheet/", methods=['POST'])
 def drop_worksheet():
@@ -662,9 +671,3 @@ def return_dbsource_msg():
         data = conn.query_all("select id,sourceName,sourceType from {} where uid=%s".format(config.TABLENAME4),
                               g.token.get("id"))
     return jsonify({"code": 1, "data": data})
-
-
-
-
-
-

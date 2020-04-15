@@ -14,20 +14,15 @@ def echo_socket(socket):
         print('接收socket数据：',message)
         socket.send(message)
 
-@ws.route('/ws/recv/<client_name>')
-def recv_socket(socket,client_name):
+
+@ws.route('/ws/<client_name>')
+def send_socket(socket,client_name):
     channel = 'ws'
     rp = redis.pubsub()
     rp.subscribe(channel)
 
     while not socket.closed:
-        listen_msg = rp.parse_response()
-        socket.send(json.dumps(listen_msg)) 
-
-@ws.route('/ws/send/<client_name>')
-def send_socket(socket,client_name):
-    channel = 'ws'
-    while not socket.closed:
+        listen_msg = rp.parse_response(block=False)
         message = socket.receive()
         if message:
             who_send_msg = {
@@ -35,3 +30,12 @@ def send_socket(socket,client_name):
                     "send_msg": message,
                 }
             redis.publish(channel,json.dumps(who_send_msg))
+        if listen_msg:
+            if listen_msg[0] == 'message':
+                try:
+                    if json.loads(listen_msg[-1])['send_user'] == client_name:
+                        continue
+                except:
+                    pass
+            socket.send(json.dumps(listen_msg))
+             

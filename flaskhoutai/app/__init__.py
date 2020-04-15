@@ -5,16 +5,13 @@
 """
 
 from flask import Flask
-# from flask_cors import CORS
 from utils.dbutils import redis
 from utils.websocket_util import Sockets
-from utils.admin_util import admin
 from utils.dbutils import db
 
 def create_app():
     """创建app"""
     app = Flask(__name__, instance_relative_config=True)
-    # CORS(app, supports_credentials=1)
 
     # 加载配置
     app.config.from_object('config.default')
@@ -24,7 +21,6 @@ def create_app():
     # 加载socket
     sockets = Sockets(app)
     redis.init_app(app)
-    admin.init_app(app)
     db.init_app(app)
     # 接口返回乱码问题
     app.config['JSON_AS_ASCII'] = False
@@ -47,9 +43,6 @@ def create_app():
     from app.public_data.views import public_data
     app.register_blueprint(public_data, url_prefix="/public_data")
 
-    # 服务器钉钉蓝图注册
-    from app.error_handler.views import error_handler
-    app.register_blueprint(error_handler, url_prefix="/error_handler")
 
     # 注册组件联动蓝图
     from app.component_linkage.views import component_linkage
